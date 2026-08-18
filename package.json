@@ -2,17 +2,17 @@
   "name": "nexusflix-vip",
   "version": "4.0.0",
   "description": "Professional Stremio Addon - Global Horror, OTT, Anime, Regional Cinema",
-  "main": "src/index.js",
+  "main": "Index.js",
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler publish",
+    "deploy": "wrangler deploy",
     "test": "node test.js"
   },
   "keywords": ["stremio", "addon", "horror", "anime", "streaming"],
   "author": "NexusFlix Team",
   "license": "MIT",
   "devDependencies": {
-    "wrangler": "^3.28.0"
+    "wrangler": "^3.20.0"
   }
 }

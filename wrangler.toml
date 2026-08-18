@@ -1,12 +1,10 @@
 name = "nexusflix-vip"
-type = "javascript"
-main = "src/index.js"
+main = "Index.js"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
 [env.production]
 name = "nexusflix-vip-prod"
-route = "nexusflix-vip.your-domain.workers.dev"
 
 [build]
 command = "npm install"
