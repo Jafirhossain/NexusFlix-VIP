@@ -1,0 +1,3 @@
+name = "nexusflix-vip"
+main = "index.js"
+compatibility_date = "2024-08-18"
