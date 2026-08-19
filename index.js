@@ -1,6 +1,7 @@
 /**
- * NexusFlix VIP - Ultimate Dual Scraper Build (v4.0)
- * Integrated YTS P2P + Torrentio Proxy + Web Extractors
+ * NexusFlix VIP - 100% INDEPENDENT STANDALONE SCRAPER (v7.0)
+ * ZERO Dependency on Torrentio/MediaFusion/Comet.
+ * Uses Direct APIs: YTS (Movies) & EZTV (Series) + Web Streams.
  */
 
 const corsHeaders = {
@@ -11,7 +12,6 @@ const corsHeaders = {
 
 export default {
   async fetch(request) {
-    // Handle CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders });
     }
@@ -19,13 +19,13 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // 1. MANIFEST (Stremio format)
+    // 1. MANIFEST
     if (path.endsWith('/manifest.json')) {
       const manifest = {
-        id: 'org.stremio.nexusflixvip.v4',
-        version: '4.0.0',
+        id: 'org.stremio.nexusflixvip.v7',
+        version: '7.0.0',
         name: 'NexusFlix VIP 🇮🇳',
-        description: 'Advanced P2P Scraper & Web Extractor. 100% Working.',
+        description: 'Standalone Direct Scraper (YTS + EZTV). No Proxy Dependencies. 100% Working.',
         logo: 'https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png',
         types: ['movie', 'series', 'anime', 'other'],
         catalogs: [],
@@ -39,7 +39,7 @@ export default {
       });
     }
 
-    // 2. CONFIGURATION UI (100% Install Fix with Copy Button)
+    // 2. CONFIGURATION UI
     if (path === '/' || path.endsWith('/configure')) {
       const html = `<!DOCTYPE html>
       <html lang="en">
@@ -53,127 +53,145 @@ export default {
               img { width: 80px; border-radius: 50%; margin-bottom: 15px; border: 2px solid #3b42ff; }
               h1 { font-size: 24px; margin: 0 0 10px 0; }
               p { color: #8b92a5; font-size: 14px; line-height: 1.5; margin-bottom: 25px; }
-              
+              .highlight { color: #4ade80; font-weight: bold; }
               .install-btn { display: block; background: linear-gradient(135deg, #6131b4, #3b42ff); color: white; text-decoration: none; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold; margin-bottom: 15px; transition: 0.3s; }
-              .install-btn:hover { opacity: 0.9; }
-              
               .copy-section { background: #0f1015; padding: 15px; border-radius: 8px; border: 1px solid #2a2d3e; text-align: left; }
-              .copy-section label { display: block; font-size: 12px; color: #4ade80; margin-bottom: 8px; font-weight: bold; }
+              .copy-section label { display: block; font-size: 12px; color: #eab308; margin-bottom: 8px; font-weight: bold; }
               .input-group { display: flex; gap: 10px; }
-              input[type="text"] { flex: 1; padding: 10px; background: #1a1c23; border: 1px solid #2a2d3e; color: #fff; border-radius: 5px; font-size: 14px; outline: none; }
+              input[type="text"] { flex: 1; padding: 10px; background: #1a1c23; border: 1px solid #2a2d3e; color: #fff; border-radius: 5px; outline: none; }
               button { background: #2a2d3e; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-              button:hover { background: #3b42ff; }
           </style>
       </head>
       <body>
           <div class="box">
               <img src="https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png" alt="Logo" onerror="this.style.display='none'">
-              <h1>NexusFlix VIP V4</h1>
-              <p>Dual Scraper Active (P2P + Web). Click the button below to install, or use Copy Link.</p>
+              <h1>NexusFlix VIP V7</h1>
+              <p>Now running on <span class="highlight">100% Independent Native Scrapers</span>. (YTS + EZTV Direct APIs).</p>
               
               <a href="#" id="install-btn" class="install-btn">🚀 INSTALL IN STREMIO</a>
               
               <div class="copy-section">
-                  <label>METHOD 2: COPY & PASTE (100% WORKING)</label>
+                  <label>COPY & PASTE LINK (100% WORKING)</label>
                   <div class="input-group">
                       <input type="text" id="manifest-url" readonly>
                       <button onclick="copyUrl()">COPY</button>
                   </div>
               </div>
           </div>
-
           <script>
               const baseUrl = window.location.origin;
               const manifestUrl = baseUrl + '/manifest.json';
               document.getElementById('install-btn').href = manifestUrl.replace(/^https?:\\/\\//, 'stremio://');
               document.getElementById('manifest-url').value = manifestUrl;
-
               function copyUrl() {
                   const copyText = document.getElementById('manifest-url');
                   copyText.select();
-                  copyText.setSelectionRange(0, 99999);
-                  navigator.clipboard.writeText(copyText.value).then(() => {
-                      alert("✅ Link Copied! Open Stremio, paste in search bar and hit enter.");
-                  });
+                  navigator.clipboard.writeText(copyText.value).then(() => alert("✅ Link Copied! Open Stremio, paste in search & install."));
               }
           </script>
       </body>
       </html>`;
-
       return new Response(html, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
     }
 
-    // 3. STREMIO STREAM SCRAPER ROUTE
-    const streamMatch = path.match(/(?:\/([^\/]+))?\/stream\/(movie|series|anime)\/([^\/]+)\.json/);
+    // 3. DIRECT NATIVE STREAM SCRAPER
+    const streamMatch = path.match(/(?:\/([^\/]+))?\/stream\/(movie|series)\/([^\/]+)\.json/);
     
     if (streamMatch) {
       const type = streamMatch[2]; 
-      const id = streamMatch[3]; // Example: tt1234567
-      const imdbId = id.split(':')[0]; // Handles series format tt1234567:1:2
+      const fullId = streamMatch[3]; // e.g., tt1234567 or tt1234567:1:2
+      const idParts = fullId.split(':');
+      const imdbId = idParts[0]; 
       
       let streams = [];
+      const fetchPromises = [];
 
-      // --- A: YTS P2P SCRAPER (From your new code) ---
-      if (type === 'movie' && imdbId.startsWith('tt')) {
-        try {
-          const ytsUrl = `https://yts.mx/api/v2/list_movies.json?query_term=${imdbId}`;
-          const ytsRes = await fetch(ytsUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-          if (ytsRes.ok) {
-            const data = await ytsRes.json();
-            if (data.data && data.data.movies) {
-              for (const movie of data.data.movies) {
-                if (movie.torrents) {
-                  for (const tor of movie.torrents) {
-                    streams.push({
-                      name: 'Nexus P2P (YTS)',
-                      title: `🎥 ${tor.quality} | ${tor.size}\n👤 S: ${tor.seeds} P: ${tor.peers}`,
-                      infoHash: tor.hash,
-                      behaviorHints: { bingeworthyGroup: "yts" }
-                    });
-                  }
-                }
-              }
-            }
-          }
-        } catch (err) { console.error("YTS Scrape Error", err); }
-      }
+      // Format Bytes Helper
+      const formatBytes = (bytes) => {
+        if (!bytes || bytes === 0) return '0 B';
+        const k = 1024, sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      };
 
-      // --- B: WEB SCRAPER EXTRACTOR (Direct links example using VidSrc) ---
+      // ----------------------------------------------------
+      // A. WEB STREAM (Backup for both Movie & Series)
+      // ----------------------------------------------------
       if (type === 'movie') {
-        try {
-          const vidsrcUrl = `https://vidsrc.me/embed/movie?imdb=${imdbId}`;
-          streams.push({
-            name: 'Nexus Web',
-            title: `🌐 Web Stream (External Player)`,
-            url: vidsrcUrl, // We provide external URL. If user clicks, it opens web player
-            behaviorHints: { notWebReady: true }
-          });
-        } catch(e) {}
+        streams.push({
+          name: 'Nexus Web',
+          title: '🌐 Web Stream (External Player)',
+          url: `https://vidsrc.me/embed/movie?imdb=${imdbId}`,
+          behaviorHints: { notWebReady: true }
+        });
+      } else if (type === 'series' && idParts.length === 3) {
+        streams.push({
+          name: 'Nexus Web',
+          title: `🌐 Web Stream (S${idParts[1]} E${idParts[2]})`,
+          url: `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${idParts[1]}&episode=${idParts[2]}`,
+          behaviorHints: { notWebReady: true }
+        });
       }
 
-      // --- C: TORRENTIO PROXY FALLBACK (For Series and extra Movie links) ---
-      try {
-        const torrentioUrl = `https://torrentio.strem.fun/stream/${type}/${id}.json`;
-        const res = await fetch(torrentioUrl, {
-            headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' }
-        });
-        if (res.ok) {
-            const data = await res.json();
-            if (data && data.streams) {
-                data.streams.forEach(s => {
-                    streams.push({
-                        name: 'Nexus Pro',
-                        title: `⚡ ${s.title || "Stream"}`,
-                        infoHash: s.infoHash,
-                        url: s.url,
-                        behaviorHints: s.behaviorHints
-                    });
+      // ----------------------------------------------------
+      // B. MOVIE SCRAPER: DIRECT YTS API
+      // ----------------------------------------------------
+      if (type === 'movie' && imdbId.startsWith('tt')) {
+        const ytsUrl = `https://yts.mx/api/v2/movie_details.json?imdb_id=${imdbId}`;
+        fetchPromises.push(
+          fetch(ytsUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+            .then(res => res.json())
+            .then(data => {
+              if (data?.data?.movie?.torrents) {
+                data.data.movie.torrents.forEach(tor => {
+                  streams.push({
+                    name: 'Nexus YTS',
+                    title: `🎥 ${tor.quality} | ${tor.size}\n👤 Seeds: ${tor.seeds} | Peers: ${tor.peers}`,
+                    infoHash: tor.hash.toLowerCase(),
+                    behaviorHints: { bingeworthyGroup: "yts" }
+                  });
                 });
-            }
-        }
-      } catch (err) { console.error("Torrentio Error", err); }
+              }
+            }).catch(e => console.error("YTS Fetch Error:", e.message))
+        );
+      }
 
-      // Return combined streams to Stremio
+      // ----------------------------------------------------
+      // C. SERIES SCRAPER: DIRECT EZTV API
+      // ----------------------------------------------------
+      if (type === 'series' && idParts.length === 3 && imdbId.startsWith('tt')) {
+        const numericImdbId = imdbId.replace('tt', ''); // EZTV needs numeric ID without 'tt'
+        const season = parseInt(idParts[1], 10);
+        const episode = parseInt(idParts[2], 10);
+        
+        const eztvUrl = `https://eztvx.to/api/get-torrents?imdb_id=${numericImdbId}&limit=100`;
+        fetchPromises.push(
+          fetch(eztvUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+            .then(res => res.json())
+            .then(data => {
+              if (data?.torrents && data.torrents.length > 0) {
+                // Filter the torrents for the exact Season and Episode
+                const matchingTorrents = data.torrents.filter(tor => 
+                  parseInt(tor.season, 10) === season && parseInt(tor.episode, 10) === episode
+                );
+
+                matchingTorrents.forEach(tor => {
+                  streams.push({
+                    name: 'Nexus EZTV',
+                    title: `📺 ${tor.title}\n💾 ${formatBytes(tor.size_bytes)} | 👤 Seeds: ${tor.seeds}`,
+                    infoHash: tor.hash.toLowerCase(),
+                    behaviorHints: { bingeworthyGroup: "eztv" }
+                  });
+                });
+              }
+            }).catch(e => console.error("EZTV Fetch Error:", e.message))
+        );
+      }
+
+      // Wait for all APIs to finish
+      await Promise.allSettled(fetchPromises);
+
+      // Return Results
       return new Response(JSON.stringify({ streams: streams }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
