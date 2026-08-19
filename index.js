@@ -12,7 +12,7 @@ export default {
       return new Response(JSON.stringify({
         id: 'org.stremio.ultimatecombined',
         version: '1.0.0',
-        name: 'Ultimate Combined Add-on',
+        name: 'nexusflix-vip',
         description: 'Combines Torrent providers, Web stream extractors, global languages, and smart caching.',
         types: ['movie', 'series', 'anime', 'other'],
         catalogs: [],
