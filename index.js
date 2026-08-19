@@ -1,13 +1,13 @@
 /**
- * NexusFlix VIP Stremio Add-on (100% Exact Clone)
- * All Providers, Extractors, Resolutions, and Size Limits as per user screenshots.
+ * NexusFlix VIP Stremio Add-on (100% Exact Clone with Working Logic)
+ * Fixed: Direct Stremio Install + Working 'Select All' Button
  */
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // 1. Manifest Request (Stremio required manifest)
+    // 1. Manifest Request
     if (url.pathname === '/manifest.json') {
       return new Response(JSON.stringify({
         id: 'org.stremio.nexusflixvip',
@@ -24,7 +24,7 @@ export default {
       });
     }
 
-    // 2. Configuration UI (Exact Match from Screenshots)
+    // 2. Configuration UI
     if (url.pathname === '/' || url.pathname === '/configure') {
       const htmlContent = `<!DOCTYPE html>
       <html lang="en">
@@ -37,7 +37,8 @@ export default {
               .container { max-width: 800px; margin: 0 auto; padding: 20px; }
               
               h3 { font-size: 13px; letter-spacing: 1px; color: #a3a7b8; text-transform: uppercase; margin-bottom: 15px; margin-top: 35px; }
-              .select-all { float: right; color: #6e84ff; font-size: 14px; cursor: pointer; text-transform: none; font-weight: normal; }
+              .select-all { float: right; color: #6e84ff; font-size: 14px; cursor: pointer; text-transform: none; font-weight: normal; user-select: none; }
+              .select-all:hover { text-decoration: underline; }
               
               /* Pills Container */
               .pill-container { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
@@ -75,8 +76,8 @@ export default {
           <div class="container">
               
               <!-- PROVIDERS SECTION -->
-              <h3>PROVIDERS <span class="select-all">Select All</span></h3>
-              <div class="pill-container">
+              <h3>PROVIDERS <span class="select-all" onclick="toggleSelectAll()">Select All</span></h3>
+              <div class="pill-container" id="providers-container">
                   <label class="provider-pill"><input type="checkbox" checked><span>YTS</span></label>
                   <label class="provider-pill"><input type="checkbox" checked><span>EZTV</span></label>
                   <label class="provider-pill"><input type="checkbox" checked><span>RARBG</span></label>
@@ -103,7 +104,7 @@ export default {
                   <label class="provider-pill"><input type="checkbox" checked><span>🇵🇱 BestTorrents</span></label>
               </div>
 
-              <!-- SETTINGS -->
+              <!-- SETTINGS (Black Circle area) -->
               <div style="margin: 30px 0;">
                   <label class="std-checkbox"><input type="checkbox"> Show errors</label>
                   <label class="std-checkbox"><input type="checkbox"> Include external URLs in results</label>
@@ -180,14 +181,32 @@ export default {
 
               <!-- INSTALL BUTTON -->
               <button class="install-btn" onclick="generateInstallLink()">INSTALL</button>
-              <span class="copy-link" onclick="generateInstallLink()">Copy Link</span>
+              <span class="copy-link" onclick="copyInstallLink()">Copy Link</span>
           </div>
 
           <script>
+              // 1. Select All Logic
+              let allSelected = true;
+              function toggleSelectAll() {
+                  const checkboxes = document.querySelectorAll('#providers-container input[type="checkbox"]');
+                  allSelected = !allSelected;
+                  checkboxes.forEach(cb => cb.checked = allSelected);
+                  document.querySelector('.select-all').innerText = allSelected ? "Deselect All" : "Select All";
+              }
+
+              // 2. Direct Install in Stremio Logic
               function generateInstallLink() {
                   const basePath = window.location.origin;
-                  alert("Settings Configured! Ready to install in Stremio.");
-                  window.location.href = basePath + "/manifest.json";
+                  // https:// को हटाकर stremio:// लगा रहे हैं ताकि डायरेक्ट ऐप खुले
+                  const stremioPath = basePath.replace(/^https?:\\/\\//i, "stremio://");
+                  window.location.href = stremioPath + "/manifest.json";
+              }
+
+              // 3. Copy Link Logic
+              function copyInstallLink() {
+                  const basePath = window.location.origin;
+                  navigator.clipboard.writeText(basePath + "/manifest.json");
+                  alert("Link Copied! Paste it in Stremio search bar.");
               }
           </script>
       </body>
