@@ -1,0 +1,11 @@
+{
+  "name": "nexusflix-vip",
+  "version": "1.0.0",
+  "description": "Ultimate Combined Stremio Add-on",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {}
+}
