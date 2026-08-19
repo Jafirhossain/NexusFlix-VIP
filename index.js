@@ -1,17 +1,17 @@
 /**
- * NexusFlix VIP - 100% Fresh & Stable Stremio Add-on
- * Clean Architecture, Guaranteed Manifest, and Robust Stream Handler.
+ * NexusFlix VIP - Clean Stable Production Build (v2.1.1)
+ * Guaranteed Working Copy & Install Logic for Stremio.
  */
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // 1. Manifest Request (Ensures Add-on is recognized instantly by Stremio)
+    // 1. Manifest Request
     if (url.pathname.endsWith('/manifest.json')) {
       return new Response(JSON.stringify({
         id: 'org.stremio.nexusflixvip',
-        version: '2.1.0',
+        version: '2.1.1',
         name: 'NexusFlix VIP 🇮🇳',
         description: 'Ultimate Dual-Engine Add-on for Torrents & Web Streams with High Quality & Hindi Priority.',
         logo: 'https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png',
@@ -29,7 +29,7 @@ export default {
       });
     }
 
-    // 2. Configuration UI (Clean & Fast Dark Theme)
+    // 2. Configuration UI (Clean Dark Theme with Working Copy Logic)
     if (url.pathname === '/' || url.pathname.endsWith('/configure')) {
       const htmlContent = `<!DOCTYPE html>
       <html lang="en">
@@ -80,12 +80,12 @@ export default {
                   <div class="logo">
                       <img src="https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png" alt="Logo" onerror="this.style.display='none'">
                   </div>
-                  <h1>NexusFlix VIP <span class="version">v2.1.0</span></h1>
+                  <h1>NexusFlix VIP <span class="version">v2.1.1</span></h1>
               </div>
 
               <div class="bio">
                   Provides live <span>torrent streams</span> and <span>HTTP URLs</span>. Fully optimized for high quality & Hindi priority.<br>
-                  <span class="highlight-text">💡 Fresh Stable Engine Active.</span>
+                  <span class="highlight-text">💡 Clean Stable Engine Active. Use Copy URL for 100% working install.</span>
               </div>
               
               <h3>PRIORITY LANGUAGE <span class="select-all" onclick="toggleAll('lang')">Select All</span></h3>
@@ -235,17 +235,18 @@ export default {
               }
 
               function generateInstallLink() {
-                  const confId = Date.now().toString(36); 
                   const basePath = window.location.origin;
-                  const stremioPath = basePath.replace(/^https?:\/\//i, "stremio://");
-                  window.location.href = stremioPath + "/" + confId + "/manifest.json";
+                  window.location.href = basePath + "/manifest.json";
               }
 
               function copyInstallLink() {
-                  const confId = Date.now().toString(36);
                   const basePath = window.location.origin;
-                  navigator.clipboard.writeText(basePath + "/" + confId + "/manifest.json");
-                  alert("Link Copied! Paste it in Stremio search bar.");
+                  const manifestUrl = basePath + "/manifest.json";
+                  navigator.clipboard.writeText(manifestUrl).then(() => {
+                      alert("Link Copied Successfully! Now open Stremio, paste this link in the search bar, and install.");
+                  }).catch(err => {
+                      prompt("Copy this link manually:", manifestUrl);
+                  });
               }
           </script>
       </body>
@@ -255,7 +256,7 @@ export default {
       });
     }
 
-    // 3. Reliable Stream Handler (Guaranteed Non-Blocking Fetch)
+    // 3. Clean Stream Handler
     if (url.pathname.includes('/stream/')) {
       const parts = url.pathname.split('/');
       const type = parts[parts.length - 2]; 
@@ -264,42 +265,26 @@ export default {
       let streams = [];
 
       try {
-          const endpoints = [
-              `https://torrentio.strem.fun/stream/${type}/${id}.json`,
-              `https://v3-cinemeta.strem.io/streams/${type}/${id}.json`
-          ];
-
-          for (const endpoint of endpoints) {
-              try {
-                  const res = await fetch(endpoint, {
-                      headers: { 'User-Agent': 'Stremio Addon' },
-                      cf: { cacheTtl: 60 }
+          const endpoint = `https://torrentio.strem.fun/stream/${type}/${id}.json`;
+          const res = await fetch(endpoint, {
+              headers: { 'User-Agent': 'Stremio Addon' }
+          });
+          if (res && res.ok) {
+              const data = await res.json();
+              if (data && data.streams) {
+                  data.streams.forEach(s => {
+                      streams.push({
+                          name: 'NexusFlix VIP',
+                          title: `⚡ ${s.title || "Stream"}`,
+                          infoHash: s.infoHash,
+                          url: s.url,
+                          behaviorHints: s.behaviorHints
+                      });
                   });
-                  if (res && res.ok) {
-                      const data = await res.json();
-                      if (data && data.streams && data.streams.length > 0) {
-                          data.streams.forEach(s => {
-                              let titleText = s.title || "High Quality Stream";
-                              if (!titleText.includes("Hindi")) {
-                                  titleText = `🇮🇳 [Hindi Priority] \n ${titleText}`;
-                              }
-                              streams.push({
-                                  name: 'NexusFlix VIP',
-                                  title: `⚡ ${titleText}`,
-                                  infoHash: s.infoHash,
-                                  url: s.url,
-                                  behaviorHints: s.behaviorHints
-                              });
-                          });
-                          break; 
-                      }
-                  }
-              } catch (e) {
-                  continue; 
               }
           }
       } catch (err) {
-          console.error("Stream Error:", err);
+          console.error("Error:", err);
       }
 
       if (streams.length === 0) {
