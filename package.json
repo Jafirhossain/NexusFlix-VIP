@@ -1,15 +1,1 @@
-{
-  "name": "nexusflix-vip-v9",
-  "version": "9.0.0",
-  "description": "The Ultimate Live Engine Stremio Aggregator with Monetization UI",
-  "main": "Index.js",
-  "type": "module",
-  "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "wrangler": "^3.28.0"
-  }
-}
+npx wrangler deploy
