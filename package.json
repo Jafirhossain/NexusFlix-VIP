@@ -1,7 +1,7 @@
 {
-  "name": "nexusflix-vip",
-  "version": "5.0.0",
-  "description": "Premium Stremio Addon - Ultimate Aggregator",
+  "name": "nexusflix-vip-v9",
+  "version": "9.0.0",
+  "description": "The Ultimate Live Engine Stremio Aggregator with Monetization UI",
   "main": "Index.js",
   "type": "module",
   "scripts": {

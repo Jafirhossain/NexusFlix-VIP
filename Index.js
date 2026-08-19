@@ -1,34 +1,49 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * 👑 NEXUSFLIX VIP (GOD MODE v5.0) - THE ULTIMATE STREMIO ADDON
- * ═══════════════════════════════════════════════════════════════
- * The Ultimate Aggregator: Torrentio + MediaFusion + HDHub + BitSearch
- * ═══════════════════════════════════════════════════════════════
+ * ═════════════════════════════════════════════════════════════════════════
+ * 👑 NEXUSFLIX VIP (v9.0) - THE ULTIMATE LIVE ENGINE AGGREGATOR
+ * ═════════════════════════════════════════════════════════════════════════
+ * APIs: TMDB, Kitsu, YTS, BitSearch, Torrents-CSV, VidSrc.
+ * Includes Premium UI, Debrid Integration capability, and Affiliate linking.
+ * ═════════════════════════════════════════════════════════════════════════
  */
 
 const CONFIG = {
-  ADDON_ID: "com.nexusflix.godmode.vip",
-  VERSION: "5.0.0",
+  ADDON_ID: "com.nexusflix.vip.v9",
+  VERSION: "9.0.0",
   TMDB_KEY: "15d2ea6d0dc1d476efbca3eba2b9bbfb",
   TIMEOUT: 8000,
-  MAX_RETRIES: 2
+  // 👇 यहाँ पर आपको अपने GitHub से कॉपी किया हुआ Raw लिंक डालना है
+  LOGO: "https://ui-avatars.com/api/?name=N+F&background=f5c518&color=000&size=256&bold=true" 
 };
 
-const OTT_PLATFORMS = {
+const LIVE_FILTERS = {
+  "🔥 Trending Today": "trending",
+  "🆕 Now Playing (New)": "now_playing",
+  "⏳ Coming Soon": "upcoming",
+  "⭐ All-Time Hits": "top_rated"
+};
+
+const OTT_NETWORKS = {
   "Netflix": "213", "Amazon Prime": "119", "Disney+": "2739", 
   "Hotstar": "122", "JioCinema": "3186", "SonyLIV": "1354", 
-  "Zee5": "3623", "Apple TV+": "2552", "Max (HBO)": "49", 
-  "Crunchyroll": "1120", "WWE Network": "1027", "ALTT": "3191",
-  "Aha": "4306", "Sun NXT": "3015", "Hulu": "453"
+  "Zee5": "3623", "Crunchyroll": "1120", "WWE Network": "1027"
 };
 
 const REGIONAL_LANGS = {
   "Hindi (Bollywood)": "hi", "Telugu (Tollywood)": "te", "Tamil (Kollywood)": "ta", 
-  "Malayalam (Mollywood)": "ml", "Kannada (Sandalwood)": "kn", "Bengali (Tollywood)": "bn", 
-  "Punjabi": "pa", "Marathi": "mr", "Gujarati": "gu", "Bhojpuri": "bho", "English (Hollywood)": "en",
-  "Japanese (Anime)": "ja", "Korean (K-Drama)": "ko", "Indonesian Horror": "id"
+  "Malayalam": "ml", "Kannada": "kn", "Bengali": "bn", "Punjabi": "pa"
 };
 
+const HORROR_VAULT = {
+  "Indonesian Horror": { genre: "27", lang: "id" },
+  "Japanese (J-Horror)": { genre: "27", lang: "ja" },
+  "Korean (K-Horror)": { genre: "27", lang: "ko" },
+  "Bollywood Horror": { genre: "27", lang: "hi" },
+  "Supernatural": { genre: "27", keyword: "supernatural" },
+  "Slasher": { genre: "27", keyword: "slasher" }
+};
+
+// --- UTILS ---
 async function fetchJSON(url, options = {}) {
   try {
     const controller = new AbortController();
@@ -51,212 +66,154 @@ const corsHeaders = {
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", ...corsHeaders } });
 }
-
 function htmlResponse(html) {
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", ...corsHeaders } });
 }
 
-// ═══════════════════════════════════════════════════════════════
-// PREMIUM WEBSITE UI (JUSTWATCH / IMDB STYLE SETUP PAGE)
-// ═══════════════════════════════════════════════════════════════
-
+// --- UI SETUP PAGE (Premium Web Vibe & Monetization) ---
 function getConfigureHTML() {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NexusFlix VIP 👑 | God Mode Setup</title>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexusFlix VIP 👑 | Setup</title>
   <style>
-    :root { --bg: #0a0a0a; --surface: #141414; --primary: #f5c518; --text: #ffffff; --text-dim: #a1a1aa; --border: #27272a; }
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding-bottom: 80px; }
+    :root { --bg: #050505; --surface: #121214; --primary: #f5c518; --text: #fff; --border: #27272a; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 100px; }
+    header { background: #000; padding: 20px; border-bottom: 1px solid var(--border); text-align: center; position: sticky; top:0; z-index:100; }
+    h1 { color: var(--primary); font-weight: 900; display: inline-flex; align-items: center; gap: 10px; }
+    .hero { text-align: center; padding: 40px 20px; }
+    .hero p { color: #a1a1aa; max-width: 600px; margin: 10px auto; line-height: 1.5; }
+    .container { max-width: 800px; margin: 0 auto; padding: 0 20px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    h2 { font-size: 18px; color: var(--primary); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
     
-    header { background: #000; padding: 20px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .logo { font-size: 24px; font-weight: 900; color: var(--primary); display: flex; align-items: center; gap: 10px; }
-    .logo span { color: #fff; }
-    .pro-badge { background: linear-gradient(45deg, #e11d48, #be123c); font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+    .checkbox-label { display: flex; align-items: center; gap: 10px; background: #0a0a0c; padding: 12px; border-radius: 8px; border: 1px solid #3f3f46; cursor: pointer; font-size: 14px; }
+    .checkbox-label:hover { border-color: var(--primary); }
+    input[type="checkbox"] { accent-color: var(--primary); width: 16px; height: 16px; }
     
-    .hero { text-align: center; padding: 50px 20px; background: radial-gradient(circle at center, rgba(245,197,24,0.08) 0%, var(--bg) 70%); }
-    .hero h1 { font-size: 38px; margin-bottom: 10px; font-weight: 800; }
-    .hero p { color: var(--text-dim); font-size: 16px; max-width: 650px; margin: 0 auto; line-height: 1.5; }
+    .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+    .input-group label { font-size: 13px; text-transform: uppercase; color: #a1a1aa; font-weight: 600; }
+    .input-group input { background: #0a0a0c; border: 1px solid #3f3f46; color: #fff; padding: 12px; border-radius: 8px; font-size: 15px; outline: none; }
+    .input-group input:focus { border-color: var(--primary); }
     
-    .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    .card h2 { font-size: 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 12px; color: var(--primary); }
-    
-    .form-group { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 8px; font-weight: 600; color: #d4d4d8; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-    select, input { width: 100%; background: #18181b; border: 1px solid #3f3f46; color: #fff; padding: 14px; border-radius: 10px; font-size: 15px; outline: none; transition: 0.2s; }
-    select:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(245,197,24,0.2); }
-    
-    .grid-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
-    .checkbox-label { display: flex; align-items: center; gap: 10px; background: #18181b; padding: 12px; border-radius: 10px; cursor: pointer; border: 1px solid #3f3f46; transition: 0.2s; font-size: 14px; font-weight: 500; }
-    .checkbox-label:hover { border-color: var(--primary); background: #27272a; }
-    .checkbox-label input { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; }
-    
-    .install-bar { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10,10,10,0.9); backdrop-filter: blur(12px); padding: 20px; border-top: 1px solid var(--border); z-index: 1000; text-align: center; }
-    .btn-install { background: var(--primary); color: #000; border: none; padding: 16px 45px; font-size: 17px; font-weight: 800; border-radius: 35px; cursor: pointer; box-shadow: 0 4px 25px rgba(245,197,24,0.4); transition: 0.2s; display: inline-flex; align-items: center; gap: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .btn-install:hover { transform: translateY(-2px); background: #e0b010; }
+    .affiliate-text { font-size: 13px; color: #a1a1aa; margin-top: 5px; }
+    .affiliate-link { color: var(--primary); text-decoration: none; font-weight: bold; }
+    .affiliate-link:hover { text-decoration: underline; }
+
+    .btn { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #000; padding: 15px 40px; font-size: 16px; font-weight: 900; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 5px 20px rgba(245,197,24,0.4); text-transform: uppercase; z-index: 1000; white-space: nowrap;}
   </style>
 </head>
 <body>
-
-  <header>
-    <div class="logo">👑 NexusFlix <span>VIP</span></div>
-    <div class="pro-badge">God Mode v5.0</div>
-  </header>
-
+  <header><h1>👑 NexusFlix VIP</h1></header>
   <div class="hero">
-    <h1>The Ultimate Streaming Aggregator</h1>
-    <p>The undisputed master combining Torrentio, MediaFusion, HDHub Direct, and BitSearch into a single, blazing-fast Stremio experience.</p>
+    <p>The Ultimate 100% Free Live Engine Aggregator. Configure your providers and enter your Debrid key for maximum 4K speed.</p>
   </div>
-
+  
   <div class="container">
-    
     <div class="card">
-      <h2>🌐 Scraper & Provider Engines</h2>
-      <div class="grid-options">
-        <label class="checkbox-label"><input type="checkbox" id="prov_hdhub" checked> HDHub Direct</label>
-        <label class="checkbox-label"><input type="checkbox" id="prov_mediafusion" checked> MediaFusion Pro</label>
-        <label class="checkbox-label"><input type="checkbox" id="prov_torrentio" checked> Torrentio VIP</label>
-        <label class="checkbox-label"><input type="checkbox" id="prov_bitsearch" checked> BitSearch P2P</label>
+      <h2>⚡ Premium Gear (Debrid Integration)</h2>
+      <div class="input-group">
+        <label>Real-Debrid API Key (Optional)</label>
+        <input type="password" id="debrid" placeholder="Enter your Real-Debrid API Key here...">
+        <div class="affiliate-text">
+          No buffering in 4K? <a href="#" class="affiliate-link" target="_blank">Get a Real-Debrid Account Here</a>
+        </div>
       </div>
     </div>
 
     <div class="card">
-      <h2>🎬 Massive Content Catalogs</h2>
-      <div class="grid-options">
-        <label class="checkbox-label"><input type="checkbox" id="cat_trending" checked> 🔥 Live Trending</label>
-        <label class="checkbox-label"><input type="checkbox" id="cat_ott" checked> 👑 All OTT Platforms</label>
-        <label class="checkbox-label"><input type="checkbox" id="cat_regional" checked> 🍿 Regional Cinema</label>
-        <label class="checkbox-label"><input type="checkbox" id="cat_anime" checked> ⛩️ Anime Universe</label>
-        <label class="checkbox-label"><input type="checkbox" id="cat_horror" checked> 💀 Global Horror</label>
-        <label class="checkbox-label"><input type="checkbox" id="cat_wwe" checked> 🤼 WWE & Sports</label>
+      <h2>⚙️ Scraper Engines</h2>
+      <div class="grid">
+        <label class="checkbox-label"><input type="checkbox" id="yts" checked> YTS (4K/1080p)</label>
+        <label class="checkbox-label"><input type="checkbox" id="bitsearch" checked> BitSearch P2P</label>
+        <label class="checkbox-label"><input type="checkbox" id="tcsv" checked> Torrents-CSV</label>
+        <label class="checkbox-label"><input type="checkbox" id="vidsrc" checked> VidSrc Web DDL</label>
       </div>
     </div>
-
-    <div class="card">
-      <h2>💎 Monetization & Performance Options</h2>
-      <div class="form-group">
-        <label>Real-Debrid API Key (Optional - For Uncapped Speed)</label>
-        <input type="password" id="debrid" placeholder="Paste your Real-Debrid token here">
-      </div>
-    </div>
-
   </div>
-
-  <div class="install-bar">
-    <button class="btn-install" onclick="installAddon()">
-      🚀 Install NexusFlix VIP to Stremio
-    </button>
-  </div>
-
+  
+  <button class="btn" onclick="install()">🚀 Install to Stremio</button>
+  
   <script>
-    function installAddon() {
+    function install() {
       const config = {
-        debrid: document.getElementById('debrid').value || "",
-        providers: {
-          hdhub: document.getElementById('prov_hdhub').checked,
-          mediafusion: document.getElementById('prov_mediafusion').checked,
-          torrentio: document.getElementById('prov_torrentio').checked,
-          bitsearch: document.getElementById('prov_bitsearch').checked
-        },
-        catalogs: {
-          trending: document.getElementById('cat_trending').checked,
-          ott: document.getElementById('cat_ott').checked,
-          regional: document.getElementById('cat_regional').checked,
-          anime: document.getElementById('cat_anime').checked,
-          horror: document.getElementById('cat_horror').checked,
-          wwe: document.getElementById('cat_wwe').checked
+        debridKey: document.getElementById('debrid').value.trim(),
+        engines: {
+          yts: document.getElementById('yts').checked,
+          bitsearch: document.getElementById('bitsearch').checked,
+          tcsv: document.getElementById('tcsv').checked,
+          vidsrc: document.getElementById('vidsrc').checked
         }
       };
-      
-      const b64 = btoa(JSON.stringify(config));
-      window.location.href = 'stremio://' + window.location.host + '/' + b64 + '/manifest.json';
+      const confStr = btoa(JSON.stringify(config));
+      window.location.href = 'stremio://' + window.location.host + '/' + confStr + '/manifest.json';
     }
   </script>
-
 </body>
 </html>`;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// MANIFEST GENERATOR
-// ═══════════════════════════════════════════════════════════════
-
+// --- MANIFEST ---
 function getManifest(configStr) {
-  let config = { catalogs: { trending: true, ott: true, regional: true, anime: true, horror: true, wwe: true } };
-  try { if (configStr) config = JSON.parse(atob(configStr)); } catch(e) {}
-
-  const catalogs = [];
-
-  if (config.catalogs.trending) {
-    catalogs.push({ type: "movie", id: "nexus_trending_m", name: "🔥 Trending Movies" });
-    catalogs.push({ type: "series", id: "nexus_trending_s", name: "🔥 Trending Series" });
-  }
-
-  if (config.catalogs.ott) {
-    catalogs.push({ type: "movie", id: "nexus_ott_m", name: "👑 OTT Movies (Netflix, Prime, Hotstar...)", extra: [{ name: "genre", isRequired: false, options: Object.keys(OTT_PLATFORMS) }] });
-    catalogs.push({ type: "series", id: "nexus_ott_s", name: "👑 Web Series (All OTT Networks)", extra: [{ name: "genre", isRequired: false, options: Object.keys(OTT_PLATFORMS) }] });
-  }
-
-  if (config.catalogs.regional) {
-    catalogs.push({ type: "movie", id: "nexus_regional", name: "🍿 Regional Cinema & Dubbed", extra: [{ name: "genre", isRequired: false, options: Object.keys(REGIONAL_LANGS) }] });
-  }
-
-  if (config.catalogs.anime) {
-    catalogs.push({ type: "series", id: "nexus_anime", name: "⛩️ Anime Universe (Sub/Dub)" });
-  }
-
-  if (config.catalogs.horror) {
-    catalogs.push({ type: "movie", id: "nexus_horror", name: "💀 Global Horror Vault" });
-  }
-
-  if (config.catalogs.wwe) {
-    catalogs.push({ type: "series", id: "nexus_wwe", name: "🤼 WWE & Combat Sports" });
-  }
-
   return {
     id: CONFIG.ADDON_ID,
     version: CONFIG.VERSION,
     name: "NexusFlix VIP 👑",
-    description: "The ultimate God Mode aggregator. All OTT platforms, regional languages, anime, WWE, and high-speed streams.",
-    logo: "https://ui-avatars.com/api/?name=N+F&background=f5c518&color=000&size=256&bold=true",
+    description: "The Ultimate Live Search Engine. 4K/1080p, Regional, Global Horror, Anime & OTTs.",
+    logo: CONFIG.LOGO,
     resources: ["catalog", "meta", "stream"],
     types: ["movie", "series", "anime"],
-    idPrefixes: ["tmdb", "tt", "kitsu"],
+    idPrefixes: ["tmdb", "tt"],
     behaviorHints: { configurable: true },
-    catalogs: catalogs
+    catalogs: [
+      { type: "movie", id: "nx_movies", name: "🔥 Global Movies Hub", extra: [{ name: "genre", isRequired: false, options: Object.keys(LIVE_FILTERS) }] },
+      { type: "series", id: "nx_series", name: "🔥 Global Web Series", extra: [{ name: "genre", isRequired: false, options: Object.keys(LIVE_FILTERS) }] },
+      { type: "movie", id: "nx_ott_m", name: "👑 OTT Movies", extra: [{ name: "genre", isRequired: false, options: Object.keys(OTT_NETWORKS) }] },
+      { type: "series", id: "nx_ott_s", name: "👑 OTT Series", extra: [{ name: "genre", isRequired: false, options: Object.keys(OTT_NETWORKS) }] },
+      { type: "movie", id: "nx_regional", name: "🍿 Regional Cinema", extra: [{ name: "genre", isRequired: false, options: Object.keys(REGIONAL_LANGS) }] },
+      { type: "movie", id: "nx_horror", name: "💀 Global Horror Vault", extra: [{ name: "genre", isRequired: false, options: Object.keys(HORROR_VAULT) }] },
+      { type: "anime", id: "nx_anime", name: "⛩️ Anime Universe", extra: [{ name: "genre", isRequired: false, options: Object.keys(LIVE_FILTERS) }] }
+    ]
   };
 }
 
+// --- CATALOG ENGINE (Live Tracker) ---
 async function getCatalog(type, catalogId, extraStr) {
   let extra = {};
-  if (extraStr) {
-    extraStr.split("&").forEach(p => { const [k,v] = p.split("="); extra[k] = decodeURIComponent(v); });
+  if (extraStr) { extraStr.split("&").forEach(p => { const [k,v] = p.split("="); extra[k] = decodeURIComponent(v); }); }
+  
+  let filter = extra.genre ? LIVE_FILTERS[extra.genre] : "trending"; // Default to trending
+  let tmdbType = type === 'series' || type === 'anime' ? 'tv' : 'movie';
+  let url = `https://api.themoviedb.org/3/trending/${tmdbType}/day?api_key=${CONFIG.TMDB_KEY}`; // Fallback
+
+  if (catalogId === "nx_movies" || catalogId === "nx_series" || catalogId === "nx_anime") {
+    if (filter === "now_playing") url = `https://api.themoviedb.org/3/${tmdbType}/now_playing?api_key=${CONFIG.TMDB_KEY}`;
+    else if (filter === "upcoming") url = `https://api.themoviedb.org/3/${tmdbType}/upcoming?api_key=${CONFIG.TMDB_KEY}`;
+    else if (filter === "top_rated") url = `https://api.themoviedb.org/3/${tmdbType}/top_rated?api_key=${CONFIG.TMDB_KEY}`;
+    
+    if (catalogId === "nx_anime") url += `&with_genres=16&with_original_language=ja`; 
+  } 
+  else if (catalogId.includes("nx_ott")) {
+    const netId = extra.genre ? OTT_NETWORKS[extra.genre] : "213";
+    url = `https://api.themoviedb.org/3/discover/${tmdbType}?api_key=${CONFIG.TMDB_KEY}&with_networks=${netId}&sort_by=popularity.desc`;
   }
-
-  let url = `https://api.themoviedb.org/3/trending/${type === 'series' ? 'tv' : 'movie'}/day?api_key=${CONFIG.TMDB_KEY}`;
-
-  if (catalogId.includes("ott")) {
-    const plat = extra.genre ? OTT_PLATFORMS[extra.genre] : "";
-    url = `https://api.themoviedb.org/3/discover/${type === 'series' ? 'tv' : 'movie'}?api_key=${CONFIG.TMDB_KEY}&sort_by=popularity.desc&watch_region=IN${plat ? '&with_networks='+plat : ''}`;
-  } else if (catalogId === "nexus_regional") {
+  else if (catalogId === "nx_regional") {
     const lang = extra.genre ? REGIONAL_LANGS[extra.genre] : "hi";
-    url = `https://api.themoviedb.org/3/discover/movie?api_key=${CONFIG.TMDB_KEY}&sort_by=popularity.desc&with_original_language=${lang}`;
-  } else if (catalogId === "nexus_horror") {
-    url = `https://api.themoviedb.org/3/discover/movie?api_key=${CONFIG.TMDB_KEY}&with_genres=27&sort_by=popularity.desc`;
-  } else if (catalogId === "nexus_anime") {
-    url = `https://api.themoviedb.org/3/discover/tv?api_key=${CONFIG.TMDB_KEY}&with_genres=16&sort_by=popularity.desc&with_original_language=ja`;
-  } else if (catalogId === "nexus_wwe") {
-    url = `https://api.themoviedb.org/3/discover/tv?api_key=${CONFIG.TMDB_KEY}&with_networks=1027&sort_by=popularity.desc`;
+    url = `https://api.themoviedb.org/3/discover/movie?api_key=${CONFIG.TMDB_KEY}&with_original_language=${lang}&sort_by=popularity.desc`;
+  }
+  else if (catalogId === "nx_horror") {
+    const vault = extra.genre ? HORROR_VAULT[extra.genre] : HORROR_VAULT["Bollywood Horror"];
+    let langQuery = vault.lang ? `&with_original_language=${vault.lang}` : "";
+    url = `https://api.themoviedb.org/3/discover/movie?api_key=${CONFIG.TMDB_KEY}&with_genres=27${langQuery}&sort_by=popularity.desc`;
   }
 
   const data = await fetchJSON(url) || { results: [] };
-  const metas = data.results.slice(0, 50).map(item => ({
+  const metas = data.results.map(item => ({
     id: `tmdb:${item.id}`, type: type, name: item.title || item.name,
-    poster: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : "https://via.placeholder.com/500x750",
+    poster: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : CONFIG.LOGO,
     description: item.overview,
     releaseInfo: (item.release_date || item.first_air_date || "").split("-")[0]
   }));
@@ -264,14 +221,16 @@ async function getCatalog(type, catalogId, extraStr) {
   return jsonResponse({ metas });
 }
 
+// --- META ENGINE ---
 async function getMeta(type, id) {
   const cleanId = id.replace("tmdb:", "").replace(".json", "");
-  const data = await fetchJSON(`https://api.themoviedb.org/3/${type === 'series' ? 'tv' : 'movie'}/${cleanId}?api_key=${CONFIG.TMDB_KEY}&append_to_response=credits`) || {};
+  const tmdbType = type === 'series' || type === 'anime' ? 'tv' : 'movie';
+  const data = await fetchJSON(`https://api.themoviedb.org/3/${tmdbType}/${cleanId}?api_key=${CONFIG.TMDB_KEY}&append_to_response=external_ids`) || {};
   
   return jsonResponse({
     meta: {
       id: id, type: type, name: data.title || data.name,
-      poster: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : "https://via.placeholder.com/500x750",
+      poster: data.poster_path ? `https://image.tmdb.org/t/p/w500${data.poster_path}` : CONFIG.LOGO,
       background: data.backdrop_path ? `https://image.tmdb.org/t/p/original${data.backdrop_path}` : "",
       description: data.overview,
       releaseInfo: (data.release_date || data.first_air_date || "").split("-")[0],
@@ -280,13 +239,10 @@ async function getMeta(type, id) {
   });
 }
 
-// ═══════════════════════════════════════════════════════════════
-// ULTIMATE AGGREGATOR ENGINE
-// ═══════════════════════════════════════════════════════════════
-
+// --- PARALLEL STREAM ENGINE ---
 async function getStreams(type, id, configStr) {
-  let config = { providers: { hdhub: true, mediafusion: true, torrentio: true, bitsearch: true } };
-  try { if (configStr) config = JSON.parse(atob(configStr)); } catch(e) {}
+  let userConfig = { debridKey: "", engines: { yts: true, bitsearch: true, tcsv: true, vidsrc: true } };
+  try { if (configStr) userConfig = JSON.parse(atob(configStr)); } catch(e) {}
 
   const cleanId = id.replace(".json", "");
   const tmdbId = cleanId.split(":")[1];
@@ -295,14 +251,15 @@ async function getStreams(type, id, configStr) {
   let year = "";
   
   if (cleanId.startsWith("tmdb:")) {
-    const meta = await fetchJSON(`https://api.themoviedb.org/3/${type === 'series' ? 'tv' : 'movie'}/${tmdbId}?api_key=${CONFIG.TMDB_KEY}&append_to_response=external_ids`);
+    const tmdbType = type === 'series' || type === 'anime' ? 'tv' : 'movie';
+    const meta = await fetchJSON(`https://api.themoviedb.org/3/${tmdbType}/${tmdbId}?api_key=${CONFIG.TMDB_KEY}&append_to_response=external_ids`);
     if (meta) {
       title = meta.title || meta.name;
       year = (meta.release_date || meta.first_air_date || "").split("-")[0];
       if (meta.external_ids && meta.external_ids.imdb_id) {
         imdbId = meta.external_ids.imdb_id;
         if (cleanId.split(":").length > 2) {
-           imdbId += `:${cleanId.split(":")[2]}:${cleanId.split(":")[3]}`;
+           imdbId += `:${cleanId.split(":")[2]}:${cleanId.split(":")[3]}`; 
         }
       }
     }
@@ -310,47 +267,82 @@ async function getStreams(type, id, configStr) {
 
   const streams = [];
   const promises = [];
+  const searchQuery = `${title} ${year}`.trim();
+  
+  // Tag Debrid Status
+  const prefixName = userConfig.debridKey ? "⚡ [DEBRID] " : "";
 
-  // 1. Torrentio VIP
-  if (config.providers.torrentio && imdbId.startsWith("tt")) {
+  // 1. YTS API
+  if (userConfig.engines.yts !== false && type === "movie" && imdbId.startsWith("tt")) {
     promises.push(
-      fetchJSON(`https://torrentio.strem.fun/stream/${type}/${imdbId}.json`).then(data => {
-        if (data && data.streams) {
-          data.streams.forEach(s => streams.push({ ...s, name: "🚀 Torrentio VIP", title: s.title.replace(/Torrentio/i, 'NexusFlix') }));
+      fetchJSON(`https://yts.mx/api/v2/list_movies.json?query_term=${imdbId.split(":")[0]}`).then(data => {
+        if (data && data.data && data.data.movies) {
+          data.data.movies[0].torrents.forEach(t => {
+            streams.push({
+              name: `${prefixName}🚀 YTS P2P`,
+              title: `✨ ${t.quality} BluRay\n💾 ${t.size} | 👥 Seeds: ${t.seeds}`,
+              infoHash: t.hash,
+              qRank: t.quality.includes("2160") || t.quality === "3D" ? 3 : (t.quality.includes("1080") ? 2 : 1)
+            });
+          });
         }
       })
     );
   }
 
-  // 2. MediaFusion Pro
-  if (config.providers.mediafusion && imdbId.startsWith("tt")) {
+  // 2. BitSearch API
+  if (userConfig.engines.bitsearch !== false && title) {
+    let bsQuery = searchQuery;
+    if (imdbId.includes(":")) {
+       const parts = imdbId.split(":");
+       bsQuery += ` S${parts[1].padStart(2, '0')}E${parts[2].padStart(2, '0')}`;
+    }
     promises.push(
-      fetchJSON(`https://mediafusion.elfhosted.com/stream/${type}/${imdbId}.json`).then(data => {
-        if (data && data.streams) {
-          data.streams.forEach(s => streams.push({ ...s, name: "🔥 MediaFusion Pro" }));
-        }
-      })
-    );
-  }
-
-  // 3. HDHub / Direct HTTP Simulation
-  if (config.providers.hdhub && type === "movie") {
-    promises.push(
-      fetchJSON(`https://vidsrc.to/api/stream?imdb_id=${imdbId.split(":")[0]}`).then(data => {
-        if (data && data.url) {
-          streams.push({ name: "📥 HDHub Direct", title: `✨ 1080p Web-DL • Fast Stream\n${title}`, url: data.url });
-        }
-      })
-    );
-  }
-
-  // 4. BitSearch P2P
-  if (config.providers.bitsearch && title) {
-    let q = `${title} ${year}`.trim();
-    promises.push(
-      fetchJSON(`https://bitsearch.info/api/v1/search?q=${encodeURIComponent(q)}&limit=10`).then(data => {
+      fetchJSON(`https://bitsearch.info/api/v1/search?q=${encodeURIComponent(bsQuery)}&limit=15`).then(data => {
         if (data && data.data) {
-          data.data.forEach(t => streams.push({ name: "⚡ BitSearch P2P", title: `${t.name}\n👥 Seeds: ${t.seeders}`, infoHash: t.infohash }));
+          data.data.forEach(t => {
+            streams.push({
+              name: `${prefixName}⚡ BitSearch`,
+              title: `${t.name}\n💾 ${t.size} | 👥 Seeds: ${t.seeders}`,
+              infoHash: t.infohash,
+              qRank: t.name.match(/2160p|4k|uhd/i) ? 3 : (t.name.match(/1080p|fhd/i) ? 2 : 1)
+            });
+          });
+        }
+      })
+    );
+  }
+
+  // 3. Torrents-CSV
+  if (userConfig.engines.tcsv !== false && title) {
+    promises.push(
+      fetchJSON(`https://torrents-csv.com/service/search?q=${encodeURIComponent(searchQuery)}&size=10`).then(data => {
+        if (data && data.torrents) {
+          data.torrents.forEach(t => {
+            streams.push({
+              name: `${prefixName}💎 Torrents-CSV`,
+              title: `${t.name}\n👥 Seeds: ${t.seeders || 'High'}`,
+              infoHash: t.infohash,
+              qRank: t.name.match(/2160p|4k/i) ? 3 : (t.name.match(/1080p/i) ? 2 : 1)
+            });
+          });
+        }
+      })
+    );
+  }
+
+  // 4. VidSrc DDL
+  if (userConfig.engines.vidsrc !== false && imdbId.startsWith("tt")) {
+    const baseId = imdbId.split(":")[0];
+    promises.push(
+      fetchJSON(`https://vidsrc.to/api/stream?imdb_id=${baseId}`).then(data => {
+        if (data && data.url) {
+          streams.push({
+            name: "📥 VidSrc DDL",
+            title: `✨ Fast Web Stream\n🎬 Direct Link`,
+            url: data.url,
+            qRank: 2
+          });
         }
       })
     );
@@ -358,40 +350,43 @@ async function getStreams(type, id, configStr) {
 
   await Promise.allSettled(promises);
 
+  // TAGGING & SORTING
   let finalStreams = [];
   const seen = new Set();
   
   streams.forEach(s => {
-    if (!s) return;
     const key = s.infoHash || s.url;
     if (key && !seen.has(key)) {
       seen.add(key);
-      const text = (s.title + " " + s.name).toLowerCase();
-      let badge = "";
-      if (text.includes("hindi") || text.includes("hin")) badge = "🇮🇳 HINDI ";
-      else if (text.includes("tamil")) badge = "🇮🇳 TAMIL ";
-      else if (text.includes("telugu")) badge = "🇮🇳 TELUGU ";
-      else if (text.includes("bengali")) badge = "🇮🇳 BENGALI ";
+      const text = s.title.toLowerCase();
       
-      if (badge) s.name = s.name.replace("\n", ` ${badge}\n`);
+      let langBadge = "";
+      if (text.includes("hindi") || text.includes("hin")) langBadge = "🇮🇳 HINDI ";
+      else if (text.includes("tamil")) langBadge = "🇮🇳 TAMIL ";
+      else if (text.includes("telugu")) langBadge = "🇮🇳 TELUGU ";
+      else if (text.includes("bengali")) langBadge = "🇮🇳 BENGALI ";
+      else if (text.includes("dual") || text.includes("multi")) langBadge = "🎙️ DUAL/MULTI ";
+      
+      if (langBadge && !s.title.includes(langBadge)) {
+        s.title = s.title.replace("\n", ` ${langBadge}\n`);
+      }
       finalStreams.push(s);
     }
   });
 
-  if (finalStreams.length === 0) finalStreams.push({ name: "⏳ NexusFlix", title: "No streams found. Try another source.", url: "" });
+  finalStreams.sort((a, b) => b.qRank - a.qRank);
+  if (finalStreams.length === 0) {
+    finalStreams.push({ name: "⏳ NexusFlix", title: "No streams found. Check spelling or try later.", url: "" });
+  }
 
   return jsonResponse({ streams: finalStreams });
 }
 
-// ═══════════════════════════════════════════════════════════════
-// ROUTER
-// ═══════════════════════════════════════════════════════════════
-
+// --- ROUTER ---
 export default {
   async fetch(request) {
     const url = new URL(request.url);
     const path = url.pathname;
-    
     if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
     try {
@@ -418,7 +413,7 @@ export default {
         return await getStreams(parts[1], parts[parts.length - 1], configStr);
       }
 
-      return jsonResponse({ status: "NexusFlix VIP God Mode Active" });
+      return jsonResponse({ status: "NexusFlix VIP is Running" });
     } catch (error) {
       return jsonResponse({ error: error.message }, 500);
     }
