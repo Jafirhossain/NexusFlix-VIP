@@ -1,6 +1,6 @@
 /**
- * NexusFlix VIP - Clean Stable Production Build (v2.1.2)
- * Fixed Stream Routing & Cloudflare Bypass
+ * NexusFlix VIP - Clean Stable Production Build (v2.1.3)
+ * Fixed Build Errors & Regex Issues
  */
 
 export default {
@@ -11,7 +11,7 @@ export default {
     if (url.pathname.endsWith('/manifest.json')) {
       return new Response(JSON.stringify({
         id: 'org.stremio.nexusflixvip',
-        version: '2.1.2',
+        version: '2.1.3',
         name: 'NexusFlix VIP 🇮🇳',
         description: 'Ultimate Dual-Engine Add-on for Torrents & Web Streams with High Quality & Hindi Priority.',
         logo: 'https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png',
@@ -80,7 +80,7 @@ export default {
                   <div class="logo">
                       <img src="https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png" alt="Logo" onerror="this.style.display='none'">
                   </div>
-                  <h1>NexusFlix VIP <span class="version">v2.1.2</span></h1>
+                  <h1>NexusFlix VIP <span class="version">v2.1.3</span></h1>
               </div>
 
               <div class="bio">
@@ -88,7 +88,6 @@ export default {
                   <span class="highlight-text">💡 Note: Web Scrapers require external API. Currently fetching best Torrents.</span>
               </div>
               
-              <!-- UI Elements (Kept as is for design) -->
               <h3>PRIORITY LANGUAGE <span class="select-all" onclick="toggleAll('lang')">Select All</span></h3>
               <div class="pill-container" id="lang-container">
                   <label class="pill"><input type="checkbox" checked><span class="purple">Hindi 🇮🇳 (Priority)</span></label>
@@ -104,8 +103,8 @@ export default {
           <script>
               function generateInstallLink() {
                   const basePath = window.location.origin;
-                  // Fixed: Uses stremio:// to open app directly
-                  const stremioUrl = basePath.replace(/^https?:\\/\\//, 'stremio://') + "/manifest.json";
+                  // Fixed Install Link Logic
+                  const stremioUrl = basePath.replace("https://", "stremio://").replace("http://", "stremio://") + "/manifest.json";
                   window.location.href = stremioUrl;
               }
 
@@ -126,9 +125,9 @@ export default {
       });
     }
 
-    // 3. Clean Stream Handler (Fixed Routing & Cloudflare Bypass)
-    // Matches both /stream/type/id.json AND /config/stream/type/id.json
-    const streamRegex = /(?:\\/([^\\/]+))?\\/stream\\/([^\\/]+)\\/([^\\/]+)\\.json/;
+    // 3. Clean Stream Handler
+    // Fixed Regex Syntax Error
+    const streamRegex = /(?:\/([^\/]+))?\/stream\/([^\/]+)\/([^\/]+)\.json/;
     const match = url.pathname.match(streamRegex);
 
     if (match) {
@@ -139,12 +138,11 @@ export default {
       let streams = [];
 
       try {
-          // Construct proper Torrentio URL
+          // Fixed Template Literals Syntax Error
           const torrentioUrl = config 
-              ? \`https://torrentio.strem.fun/\${config}/stream/\${type}/\${id}.json\`
-              : \`https://torrentio.strem.fun/stream/\${type}/\${id}.json\`;
+              ? `https://torrentio.strem.fun/${config}/stream/${type}/${id}.json`
+              : `https://torrentio.strem.fun/stream/${type}/${id}.json`;
 
-          // Fetch with proper headers to avoid Cloudflare Worker blocks
           const res = await fetch(torrentioUrl, {
               headers: { 
                   'Accept': 'application/json',
@@ -158,7 +156,7 @@ export default {
                   data.streams.forEach(s => {
                       streams.push({
                           name: 'NexusFlix VIP',
-                          title: \`⚡ \${s.title || "Stream"}\`,
+                          title: `⚡ ${s.title || "Stream"}`,
                           infoHash: s.infoHash,
                           url: s.url,
                           behaviorHints: s.behaviorHints
@@ -172,7 +170,6 @@ export default {
           console.error("Error fetching streams:", err);
       }
 
-      // Fallback if no streams found
       if (streams.length === 0) {
           streams.push({
               name: 'NexusFlix VIP',
