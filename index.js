@@ -1,7 +1,6 @@
 /**
- * NexusFlix VIP - 100% INDEPENDENT STANDALONE SCRAPER (v7.0)
- * ZERO Dependency on Torrentio/MediaFusion/Comet.
- * Uses Direct APIs: YTS (Movies) & EZTV (Series) + Web Streams.
+ * NexusFlix VIP - Ultimate Native Scraper (v8.0)
+ * Direct Integrations: Torrent-CSV + YTS + EZTV + VidSrc (100% Unblockable)
  */
 
 const corsHeaders = {
@@ -22,10 +21,10 @@ export default {
     // 1. MANIFEST
     if (path.endsWith('/manifest.json')) {
       const manifest = {
-        id: 'org.stremio.nexusflixvip.v7',
-        version: '7.0.0',
+        id: 'org.stremio.nexusflixvip.v8',
+        version: '8.0.0',
         name: 'NexusFlix VIP 🇮🇳',
-        description: 'Standalone Direct Scraper (YTS + EZTV). No Proxy Dependencies. 100% Working.',
+        description: 'Standalone Direct Scraper (Torrent-CSV + YTS + EZTV). No Proxy Dependencies. 100% Working.',
         logo: 'https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png',
         types: ['movie', 'series', 'anime', 'other'],
         catalogs: [],
@@ -65,8 +64,8 @@ export default {
       <body>
           <div class="box">
               <img src="https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png" alt="Logo" onerror="this.style.display='none'">
-              <h1>NexusFlix VIP V7</h1>
-              <p>Now running on <span class="highlight">100% Independent Native Scrapers</span>. (YTS + EZTV Direct APIs).</p>
+              <h1>NexusFlix VIP V8</h1>
+              <p>Powered by <span class="highlight">Torrent-CSV API</span>, YTS, and EZTV Direct.</p>
               
               <a href="#" id="install-btn" class="install-btn">🚀 INSTALL IN STREMIO</a>
               
@@ -105,8 +104,17 @@ export default {
       
       let streams = [];
       const fetchPromises = [];
+      const uniqueStreams = new Map();
 
-      // Format Bytes Helper
+      // Duplicate filter
+      const addStream = (streamData) => {
+        const key = streamData.infoHash || streamData.url;
+        if (key && !uniqueStreams.has(key)) {
+          uniqueStreams.set(key, streamData);
+        }
+      };
+
+      // Byte Formatter
       const formatBytes = (bytes) => {
         if (!bytes || bytes === 0) return '0 B';
         const k = 1024, sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -115,26 +123,49 @@ export default {
       };
 
       // ----------------------------------------------------
-      // A. WEB STREAM (Backup for both Movie & Series)
+      // A. CINEMETA API: Get Title for Torrent-CSV
       // ----------------------------------------------------
-      if (type === 'movie') {
-        streams.push({
-          name: 'Nexus Web',
-          title: '🌐 Web Stream (External Player)',
-          url: `https://vidsrc.me/embed/movie?imdb=${imdbId}`,
-          behaviorHints: { notWebReady: true }
-        });
-      } else if (type === 'series' && idParts.length === 3) {
-        streams.push({
-          name: 'Nexus Web',
-          title: `🌐 Web Stream (S${idParts[1]} E${idParts[2]})`,
-          url: `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${idParts[1]}&episode=${idParts[2]}`,
-          behaviorHints: { notWebReady: true }
-        });
+      let title = '';
+      try {
+        const metaRes = await fetch(`https://v3-cinemeta.strem.io/meta/${type}/${imdbId}.json`);
+        if (metaRes.ok) {
+          const metaData = await metaRes.json();
+          title = metaData?.meta?.name || '';
+        }
+      } catch (e) {}
+
+      // ----------------------------------------------------
+      // B. TORRENT-CSV API (Movies & Series Both)
+      // ----------------------------------------------------
+      if (title) {
+        let query = title;
+        if (type === 'series' && idParts.length === 3) {
+          const s = idParts[1].padStart(2, '0');
+          const e = idParts[2].padStart(2, '0');
+          query = `${title} s${s}e${e}`;
+        }
+        
+        const csvUrl = `https://torrents-csv.com/service/search?q=${encodeURIComponent(query)}&size=30`;
+        fetchPromises.push(
+          fetch(csvUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+            .then(res => res.json())
+            .then(data => {
+              if (data && Array.isArray(data)) {
+                data.forEach(tor => {
+                  addStream({
+                    name: 'Nexus CSV',
+                    title: `⚡ ${tor.name}\n💾 ${formatBytes(tor.size_bytes)} | 👤 Seeds: ${tor.seeders}`,
+                    infoHash: tor.infohash.toLowerCase(),
+                    behaviorHints: { bingeworthyGroup: "csv" }
+                  });
+                });
+              }
+            }).catch(e => console.error("CSV Fetch Error:", e.message))
+        );
       }
 
       // ----------------------------------------------------
-      // B. MOVIE SCRAPER: DIRECT YTS API
+      // C. MOVIE SCRAPER: DIRECT YTS API
       // ----------------------------------------------------
       if (type === 'movie' && imdbId.startsWith('tt')) {
         const ytsUrl = `https://yts.mx/api/v2/movie_details.json?imdb_id=${imdbId}`;
@@ -144,7 +175,7 @@ export default {
             .then(data => {
               if (data?.data?.movie?.torrents) {
                 data.data.movie.torrents.forEach(tor => {
-                  streams.push({
+                  addStream({
                     name: 'Nexus YTS',
                     title: `🎥 ${tor.quality} | ${tor.size}\n👤 Seeds: ${tor.seeds} | Peers: ${tor.peers}`,
                     infoHash: tor.hash.toLowerCase(),
@@ -157,10 +188,10 @@ export default {
       }
 
       // ----------------------------------------------------
-      // C. SERIES SCRAPER: DIRECT EZTV API
+      // D. SERIES SCRAPER: DIRECT EZTV API
       // ----------------------------------------------------
       if (type === 'series' && idParts.length === 3 && imdbId.startsWith('tt')) {
-        const numericImdbId = imdbId.replace('tt', ''); // EZTV needs numeric ID without 'tt'
+        const numericImdbId = imdbId.replace('tt', '');
         const season = parseInt(idParts[1], 10);
         const episode = parseInt(idParts[2], 10);
         
@@ -170,13 +201,11 @@ export default {
             .then(res => res.json())
             .then(data => {
               if (data?.torrents && data.torrents.length > 0) {
-                // Filter the torrents for the exact Season and Episode
                 const matchingTorrents = data.torrents.filter(tor => 
                   parseInt(tor.season, 10) === season && parseInt(tor.episode, 10) === episode
                 );
-
                 matchingTorrents.forEach(tor => {
-                  streams.push({
+                  addStream({
                     name: 'Nexus EZTV',
                     title: `📺 ${tor.title}\n💾 ${formatBytes(tor.size_bytes)} | 👤 Seeds: ${tor.seeds}`,
                     infoHash: tor.hash.toLowerCase(),
@@ -188,10 +217,31 @@ export default {
         );
       }
 
-      // Wait for all APIs to finish
+      // ----------------------------------------------------
+      // E. WEB STREAM (Backup Direct Play)
+      // ----------------------------------------------------
+      if (type === 'movie') {
+        addStream({
+          name: 'Nexus Web',
+          title: '🌐 Web Stream (External Player)',
+          url: `https://vidsrc.me/embed/movie?imdb=${imdbId}`,
+          behaviorHints: { notWebReady: true }
+        });
+      } else if (type === 'series' && idParts.length === 3) {
+        addStream({
+          name: 'Nexus Web',
+          title: `🌐 Web Stream (S${idParts[1]} E${idParts[2]})`,
+          url: `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${idParts[1]}&episode=${idParts[2]}`,
+          behaviorHints: { notWebReady: true }
+        });
+      }
+
+      // Wait for all Scrapers to finish concurrently
       await Promise.allSettled(fetchPromises);
 
-      // Return Results
+      // Convert Map back to array
+      streams = Array.from(uniqueStreams.values());
+
       return new Response(JSON.stringify({ streams: streams }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
