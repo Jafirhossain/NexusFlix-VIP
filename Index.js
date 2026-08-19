@@ -13,7 +13,7 @@ const CONFIG = {
   TMDB_KEY: "15d2ea6d0dc1d476efbca3eba2b9bbfb",
   TIMEOUT: 8000,
   // 👇 यहाँ पर आपको अपने GitHub से कॉपी किया हुआ Raw लिंक डालना है
-  LOGO: "https://ui-avatars.com/api/?name=N+F&background=f5c518&color=000&size=256&bold=true" 
+  LOGO: "https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png" 
 };
 
 const LIVE_FILTERS = {
