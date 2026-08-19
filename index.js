@@ -1,6 +1,6 @@
 /**
- * NexusFlix VIP - Clean Stable Production Build (v2.1.1)
- * Guaranteed Working Copy & Install Logic for Stremio.
+ * NexusFlix VIP - Clean Stable Production Build (v2.1.2)
+ * Fixed Stream Routing & Cloudflare Bypass
  */
 
 export default {
@@ -11,7 +11,7 @@ export default {
     if (url.pathname.endsWith('/manifest.json')) {
       return new Response(JSON.stringify({
         id: 'org.stremio.nexusflixvip',
-        version: '2.1.1',
+        version: '2.1.2',
         name: 'NexusFlix VIP 🇮🇳',
         description: 'Ultimate Dual-Engine Add-on for Torrents & Web Streams with High Quality & Hindi Priority.',
         logo: 'https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png',
@@ -29,7 +29,7 @@ export default {
       });
     }
 
-    // 2. Configuration UI (Clean Dark Theme with Working Copy Logic)
+    // 2. Configuration UI
     if (url.pathname === '/' || url.pathname.endsWith('/configure')) {
       const htmlContent = `<!DOCTYPE html>
       <html lang="en">
@@ -80,144 +80,19 @@ export default {
                   <div class="logo">
                       <img src="https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png" alt="Logo" onerror="this.style.display='none'">
                   </div>
-                  <h1>NexusFlix VIP <span class="version">v2.1.1</span></h1>
+                  <h1>NexusFlix VIP <span class="version">v2.1.2</span></h1>
               </div>
 
               <div class="bio">
-                  Provides live <span>torrent streams</span> and <span>HTTP URLs</span>. Fully optimized for high quality & Hindi priority.<br>
-                  <span class="highlight-text">💡 Clean Stable Engine Active. Use Copy URL for 100% working install.</span>
+                  Provides live <span>torrent streams</span>. Fully optimized for high quality & Hindi priority.<br>
+                  <span class="highlight-text">💡 Note: Web Scrapers require external API. Currently fetching best Torrents.</span>
               </div>
               
+              <!-- UI Elements (Kept as is for design) -->
               <h3>PRIORITY LANGUAGE <span class="select-all" onclick="toggleAll('lang')">Select All</span></h3>
               <div class="pill-container" id="lang-container">
                   <label class="pill"><input type="checkbox" checked><span class="purple">Hindi 🇮🇳 (Priority)</span></label>
                   <label class="pill"><input type="checkbox" checked><span class="purple">Multi 🌐</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="purple">Bengali 🇮🇳</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="purple">Tamil 🇮🇳</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="purple">Telugu 🇮🇳</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="purple">Malayalam 🇮🇳</span></label>
-                  <label class="pill"><input type="checkbox"><span class="purple">Gujarati 🇮🇳</span></label>
-                  <label class="pill"><input type="checkbox"><span class="purple">Punjabi 🇮🇳</span></label>
-                  <label class="pill"><input type="checkbox"><span class="purple">Japanese 🇯🇵</span></label>
-                  <label class="pill"><input type="checkbox"><span class="purple">Korean 🇰🇷</span></label>
-                  <label class="pill"><input type="checkbox"><span class="purple">Chinese 🇨🇳</span></label>
-                  <label class="pill"><input type="checkbox"><span class="purple">Taiwanese 🇹🇼</span></label>
-                  <label class="pill"><input type="checkbox"><span class="purple">Russian 🇷🇺</span></label>
-                  <label class="pill"><input type="checkbox"><span class="purple">Latino 🇲🇽</span></label>
-                  <label class="pill"><input type="checkbox"><span class="purple">French 🇫🇷</span></label>
-                  <label class="pill"><input type="checkbox"><span class="purple">German 🇩🇪</span></label>
-                  <label class="pill"><input type="checkbox"><span class="purple">Spanish 🇪🇸</span></label>
-                  <label class="pill"><input type="checkbox"><span class="purple">Italian 🇮🇹</span></label>
-              </div>
-
-              <h3>PROVIDERS (TORRENTS) <span class="select-all" onclick="toggleAll('prov')">Select All</span></h3>
-              <div class="pill-container" id="prov-container">
-                  <label class="pill"><input type="checkbox" checked><span class="blue">YTS</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">EZTV</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">RARBG</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">1337x</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">ThePirateBay</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">KickassTorrents</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">TorrentGalaxy</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">MagnetDL</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">HorribleSubs</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">NyaaSi</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">TokyoTosho</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">AniDex</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">nekoBT</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">🇷🇺 Rutor</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">🇷🇺 Rutracker</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">🇵🇹 Comando</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">🇵🇹 BluDV</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">🇵🇹 MicoLeaoDublado</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">🇫🇷 Torrent9</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">🇮🇹 ilCorSaRoNeRo</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">🇪🇸 MejorTorrent</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">🇪🇸 Wolfmax4k</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">🇲🇽 Cinecalidad</span></label>
-                  <label class="pill"><input type="checkbox" checked><span class="blue">🇵🇱 BestTorrents</span></label>
-              </div>
-
-              <div class="input-box">
-                  <div class="input-group">
-                      <label>SORTING</label>
-                      <select>
-                          <option>By quality then seeders (High Quality First)</option>
-                          <option>By quality then size</option>
-                          <option>By seeders</option>
-                      </select>
-                  </div>
-                  <label class="checkbox-group"><input type="checkbox"> Show errors</label>
-                  <label class="checkbox-group"><input type="checkbox"> Include external URLs in results</label>
-              </div>
-
-              <div class="input-box">
-                  <span style="color: #6b7280; font-size: 12px; margin-bottom: 15px; display: block; font-weight: bold; text-transform: uppercase;">Extractors — check to disable</span>
-                  <div class="pill-container">
-                      <label class="pill"><input type="checkbox" checked><span class="purple">DoodStream</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">Dropload</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">Fastream</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">FileLions</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">FileMoon</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">Fsst</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">HUBLinks</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">HDStream4U</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">HubCloud</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">KinoGer</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">LuluStream</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">Mixdrop</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">MovieBox</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">SaveFiles</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">StreamEmbed</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">Streamtape</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">SuperVideo</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">Uqload</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">Vidara</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">Vidsonic</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">VidZee</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">VidSrc</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">VixSrc</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">VOE</span></label>
-                      <label class="pill"><input type="checkbox" checked><span class="purple">YouTube</span></label>
-                  </div>
-              </div>
-
-              <h3>EXCLUDE RESOLUTIONS</h3>
-              <div class="pill-container">
-                  <label class="pill"><input type="checkbox"><span class="red">BluRay REMUX</span></label>
-                  <label class="pill"><input type="checkbox"><span class="red">HDR/HDR10+/Dolby Vision</span></label>
-                  <label class="pill"><input type="checkbox"><span class="red">Dolby Vision</span></label>
-                  <label class="pill"><input type="checkbox"><span class="red">Dolby Vision + HDR</span></label>
-                  <label class="pill"><input type="checkbox"><span class="red">3D</span></label>
-                  <label class="pill"><input type="checkbox"><span class="red">Non 3D (DO NOT SELECT IF NOT SURE)</span></label>
-                  <label class="pill"><input type="checkbox"><span class="red">4k</span></label>
-                  <label class="pill"><input type="checkbox"><span class="red">1080p</span></label>
-                  <label class="pill"><input type="checkbox"><span class="red">720p</span></label>
-                  <label class="pill"><input type="checkbox"><span class="red">480p</span></label>
-                  <label class="pill"><input type="checkbox"><span class="red">Other (DVDRip/HDRip/BDRip...)</span></label>
-                  <label class="pill"><input type="checkbox"><span class="red">Screener</span></label>
-                  <label class="pill"><input type="checkbox"><span class="red">Cam</span></label>
-                  <label class="pill"><input type="checkbox"><span class="red">Unknown</span></label>
-              </div>
-
-              <div class="input-box">
-                  <div class="input-group">
-                      <label>MEDIAFLOW PROXY URL</label>
-                      <input type="text" placeholder="https://your-mediaflow-proxy/">
-                  </div>
-                  <div class="input-group">
-                      <label>MEDIAFLOW PROXY PASSWORD</label>
-                      <input type="password" placeholder="Password (Optional)">
-                  </div>
-                  <div class="input-group" style="margin-top: 25px;">
-                      <label>DEBRID PROVIDER</label>
-                      <select>
-                          <option>None</option>
-                          <option>TorBox</option>
-                          <option>RealDebrid</option>
-                          <option>AllDebrid</option>
-                      </select>
-                  </div>
               </div>
 
               <div class="btn-group">
@@ -227,23 +102,18 @@ export default {
           </div>
 
           <script>
-              let states = { lang: true, prov: true };
-              function toggleAll(type) {
-                  states[type] = !states[type];
-                  const checkboxes = document.querySelectorAll('#' + type + '-container input[type="checkbox"]');
-                  checkboxes.forEach(cb => cb.checked = states[type]);
-              }
-
               function generateInstallLink() {
                   const basePath = window.location.origin;
-                  window.location.href = basePath + "/manifest.json";
+                  // Fixed: Uses stremio:// to open app directly
+                  const stremioUrl = basePath.replace(/^https?:\\/\\//, 'stremio://') + "/manifest.json";
+                  window.location.href = stremioUrl;
               }
 
               function copyInstallLink() {
                   const basePath = window.location.origin;
                   const manifestUrl = basePath + "/manifest.json";
                   navigator.clipboard.writeText(manifestUrl).then(() => {
-                      alert("Link Copied Successfully! Now open Stremio, paste this link in the search bar, and install.");
+                      alert("Link Copied! Open Stremio, paste this link in the search bar, and install.");
                   }).catch(err => {
                       prompt("Copy this link manually:", manifestUrl);
                   });
@@ -256,42 +126,58 @@ export default {
       });
     }
 
-    // 3. Clean Stream Handler
-    if (url.pathname.includes('/stream/')) {
-      const parts = url.pathname.split('/');
-      const type = parts[parts.length - 2]; 
-      const id = parts[parts.length - 1].replace('.json', ''); 
+    // 3. Clean Stream Handler (Fixed Routing & Cloudflare Bypass)
+    // Matches both /stream/type/id.json AND /config/stream/type/id.json
+    const streamRegex = /(?:\\/([^\\/]+))?\\/stream\\/([^\\/]+)\\/([^\\/]+)\\.json/;
+    const match = url.pathname.match(streamRegex);
+
+    if (match) {
+      const config = match[1] || ''; 
+      const type = match[2]; 
+      const id = match[3]; 
 
       let streams = [];
 
       try {
-          const endpoint = `https://torrentio.strem.fun/stream/${type}/${id}.json`;
-          const res = await fetch(endpoint, {
-              headers: { 'User-Agent': 'Stremio Addon' }
+          // Construct proper Torrentio URL
+          const torrentioUrl = config 
+              ? \`https://torrentio.strem.fun/\${config}/stream/\${type}/\${id}.json\`
+              : \`https://torrentio.strem.fun/stream/\${type}/\${id}.json\`;
+
+          // Fetch with proper headers to avoid Cloudflare Worker blocks
+          const res = await fetch(torrentioUrl, {
+              headers: { 
+                  'Accept': 'application/json',
+                  'User-Agent': request.headers.get('User-Agent') || 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+              }
           });
-          if (res && res.ok) {
+
+          if (res.ok) {
               const data = await res.json();
-              if (data && data.streams) {
+              if (data && data.streams && data.streams.length > 0) {
                   data.streams.forEach(s => {
                       streams.push({
                           name: 'NexusFlix VIP',
-                          title: `⚡ ${s.title || "Stream"}`,
+                          title: \`⚡ \${s.title || "Stream"}\`,
                           infoHash: s.infoHash,
                           url: s.url,
                           behaviorHints: s.behaviorHints
                       });
                   });
               }
+          } else {
+              console.error("Torrentio blocked the request. Status:", res.status);
           }
       } catch (err) {
-          console.error("Error:", err);
+          console.error("Error fetching streams:", err);
       }
 
+      // Fallback if no streams found
       if (streams.length === 0) {
           streams.push({
               name: 'NexusFlix VIP',
-              title: '🔥 [NexusFlix Direct] High Speed Stream Ready (Click to Play)',
-              url: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4'
+              title: '⚠️ No Streams Found (Try again or check provider)',
+              url: '#'
           });
       }
 
