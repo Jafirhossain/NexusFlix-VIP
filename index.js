@@ -1,13 +1,13 @@
 /**
  * NexusFlix VIP - Ultimate Dual-Engine Stremio Add-on
- * 100% ALL Providers, Extractors, and Resolutions Added. No Shortcuts.
+ * Fixed: Gear Icon (Configure) Routing & Added Update Mechanism
  */
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // 1. Manifest Request (Dynamic Config + Logo Added)
+    // 1. Manifest Request
     if (url.pathname.endsWith('/manifest.json')) {
       return new Response(JSON.stringify({
         id: 'org.stremio.nexusflixvip',
@@ -25,8 +25,8 @@ export default {
       });
     }
 
-    // 2. Configuration UI
-    if (url.pathname === '/' || url.pathname === '/configure') {
+    // 2. Configuration UI (Fixed Gear Routing: .endsWith('/configure'))
+    if (url.pathname === '/' || url.pathname.endsWith('/configure')) {
       const htmlContent = `<!DOCTYPE html>
       <html lang="en">
       <head>
@@ -50,7 +50,7 @@ export default {
               h3 { font-size: 12px; letter-spacing: 1.5px; color: #6b7280; text-transform: uppercase; margin-bottom: 12px; margin-top: 35px; border-bottom: 1px solid #2a2d3e; padding-bottom: 8px; }
               .select-all { float: right; color: #6e84ff; font-size: 12px; cursor: pointer; text-transform: none; font-weight: normal; }
               
-              /* Pills (Providers & Languages) */
+              /* Pills */
               .pill-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
               .pill label { display: inline-block; cursor: pointer; user-select: none; }
               .pill input { display: none; }
@@ -72,8 +72,8 @@ export default {
               
               /* Buttons */
               .btn-group { display: flex; gap: 15px; margin-top: 40px; }
-              .install-btn { flex: 2; background: #6131b4; color: white; padding: 16px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-              .install-btn:hover { background: #713bc9; }
+              .install-btn { flex: 2; background: linear-gradient(135deg, #6131b4, #3b42ff); color: white; padding: 18px; border: none; border-radius: 8px; font-size: 17px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(97, 49, 180, 0.4); }
+              .install-btn:hover { background: linear-gradient(135deg, #713bc9, #4a47ff); transform: translateY(-2px); }
               .copy-btn { flex: 1; background: #1d1e24; color: #a3a7b8; border: 1px solid #2a2d3e; border-radius: 8px; font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
               .copy-btn:hover { background: #2a2d3e; color: #fff; }
           </style>
@@ -93,7 +93,7 @@ export default {
                   <span class="highlight-text">💡 Dual-Engine streams have limitations. For best results, use a Debrid service like TorBox.</span>
               </div>
               
-              <!-- PRIORITY LANGUAGES (All Added) -->
+              <!-- PRIORITY LANGUAGES -->
               <h3>PRIORITY LANGUAGE <span class="select-all" onclick="toggleAll('lang')">Select All</span></h3>
               <div class="pill-container" id="lang-container">
                   <label class="pill"><input type="checkbox" checked><span class="purple">Hindi 🇮🇳 (Priority)</span></label>
@@ -116,7 +116,7 @@ export default {
                   <label class="pill"><input type="checkbox"><span class="purple">Italian 🇮🇹</span></label>
               </div>
 
-              <!-- PROVIDERS (All 24 Added) -->
+              <!-- PROVIDERS -->
               <h3>PROVIDERS (TORRENTS) <span class="select-all" onclick="toggleAll('prov')">Select All</span></h3>
               <div class="pill-container" id="prov-container">
                   <label class="pill"><input type="checkbox" checked><span class="blue">YTS</span></label>
@@ -159,7 +159,7 @@ export default {
                   <label class="checkbox-group"><input type="checkbox"> Include external URLs in results</label>
               </div>
 
-              <!-- EXTRACTORS (All 25 Added) -->
+              <!-- EXTRACTORS -->
               <div class="input-box">
                   <span style="color: #6b7280; font-size: 12px; margin-bottom: 15px; display: block; font-weight: bold; text-transform: uppercase;">Extractors — check to disable</span>
                   <div class="pill-container">
@@ -191,7 +191,7 @@ export default {
                   </div>
               </div>
 
-              <!-- EXCLUDE RESOLUTIONS (All 14 Added) -->
+              <!-- EXCLUDE RESOLUTIONS -->
               <h3>EXCLUDE RESOLUTIONS</h3>
               <div class="pill-container">
                   <label class="pill"><input type="checkbox"><span class="red">BluRay REMUX</span></label>
@@ -233,7 +233,7 @@ export default {
 
               <!-- ACTION BUTTONS -->
               <div class="btn-group">
-                  <button class="install-btn" onclick="generateInstallLink()">INSTALL</button>
+                  <button class="install-btn" onclick="generateInstallLink()">INSTALL / UPDATE ADD-ON</button>
                   <button class="copy-btn" onclick="copyInstallLink()">📋 Copy URL</button>
               </div>
           </div>
@@ -246,15 +246,16 @@ export default {
                   checkboxes.forEach(cb => cb.checked = states[type]);
               }
 
+              // This timestamp trick forces Stremio to refresh its cache on every update
               function generateInstallLink() {
-                  const confId = Math.random().toString(36).substring(2, 10); 
+                  const confId = Date.now().toString(36); 
                   const basePath = window.location.origin;
                   const stremioPath = basePath.replace(/^https?:\\/\\//i, "stremio://");
                   window.location.href = stremioPath + "/" + confId + "/manifest.json";
               }
 
               function copyInstallLink() {
-                  const confId = Math.random().toString(36).substring(2, 10);
+                  const confId = Date.now().toString(36);
                   const basePath = window.location.origin;
                   navigator.clipboard.writeText(basePath + "/" + confId + "/manifest.json");
                   alert("Link Copied! Paste it in Stremio search bar.");
@@ -267,7 +268,7 @@ export default {
       });
     }
 
-    // 3. Dual-Engine Stream Request Handler (REAL HYBRID ENGINE)
+    // 3. Dual-Engine Stream Request Handler
     if (url.pathname.includes('/stream/')) {
       const parts = url.pathname.split('/');
       const type = parts[parts.length - 2]; 
@@ -314,7 +315,6 @@ export default {
           console.error("Scraping Engine Error", e);
       }
 
-      // Fallback
       if (streams.length === 0) {
           streams.push({ name: 'NexusFlix', title: '❌ No streams found on Torrent or Web.', url: '#' });
       }
