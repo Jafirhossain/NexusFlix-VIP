@@ -1,8 +1,7 @@
 /**
- * NexusFlix VIP 🇮🇳 - Cloudflare Worker Edition
- * Fixed: Removed Express, Axios, Node-Cache. 
- * Added: Native Fetch, CF Cache API, Native Routing.
- * Brand: NexusFlix VIP
+ * NexusFlix VIP 🇮🇳 - Cloudflare Worker Edition (Error-Free Build)
+ * Fixed: "Unterminated string literal" error by removing all backticks.
+ * 100% Copy-Paste Safe.
  */
 
 const TMDB_API_KEY = "15d2ea6d0dc1d476efbca3eba2b9bbfb";
@@ -21,7 +20,7 @@ async function fetchScraperBypass(url) {
     } catch (err) {}
     
     try {
-        let proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+        let proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
         let resProxy = await fetch(proxyUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
         if (resProxy.ok) return await resProxy.json();
     } catch (proxyErr) {}
@@ -46,7 +45,7 @@ function getDefaultConfig() {
 function parseConfig(configStr) {
     if (!configStr) return getDefaultConfig();
     try {
-        const decoded = atob(configStr); // Replaced Buffer with atob for Cloudflare
+        const decoded = atob(configStr);
         let parsed = JSON.parse(decoded);
         if (!parsed.providers) parsed.providers = getDefaultConfig().providers;
         return { ...getDefaultConfig(), ...parsed };
@@ -112,34 +111,33 @@ export default {
             const config = parseConfig(configStr);
             const b64 = btoa(JSON.stringify(config));
             
-            const html = `
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>NexusFlix VIP Setup</title>
-                    <style>
-                        body { font-family: 'Segoe UI', sans-serif; background: #0b0f19; color: #e2e8f0; margin: 0; padding: 20px; }
-                        .container { max-width: 800px; margin: 0 auto; background: #111827; padding: 30px; border-radius: 16px; border: 1px solid #1f2937; text-align: center; }
-                        h1 { color: #f43f5e; margin-bottom: 10px; font-size: 32px; }
-                        p { color: #94a3b8; font-size: 16px; margin-bottom: 30px; }
-                        .btn { display: inline-block; background: #f43f5e; color: white; padding: 15px 40px; text-decoration: none; font-size: 18px; font-weight: bold; border-radius: 8px; transition: 0.3s; }
-                        .btn:hover { background: #e11d48; }
-                    </style>
-                </head>
-                <body>
-                    <div class="container">
-                        <h1>NexusFlix VIP 🇮🇳</h1>
-                        <p>Posters Fixed. Meta Fixed. 8-Second High-Speed Links Fixed.</p>
-                        <a id="installBtn" class="btn" href="#">Install Fresh Update</a>
-                    </div>
-                    <script>
-                        const b64 = "${b64}";
-                        document.getElementById('installBtn').href = 'stremio://' + window.location.host + '/' + b64 + '/manifest.json';
-                    </script>
-                </body>
-                </html>
-            `;
+            const html = "<!DOCTYPE html>\n" +
+            "<html lang=\"en\">\n" +
+            "<head>\n" +
+            "    <meta charset=\"UTF-8\">\n" +
+            "    <title>NexusFlix VIP Setup</title>\n" +
+            "    <style>\n" +
+            "        body { font-family: 'Segoe UI', sans-serif; background: #0b0f19; color: #e2e8f0; margin: 0; padding: 20px; }\n" +
+            "        .container { max-width: 800px; margin: 0 auto; background: #111827; padding: 30px; border-radius: 16px; border: 1px solid #1f2937; text-align: center; }\n" +
+            "        h1 { color: #f43f5e; margin-bottom: 10px; font-size: 32px; }\n" +
+            "        p { color: #94a3b8; font-size: 16px; margin-bottom: 30px; }\n" +
+            "        .btn { display: inline-block; background: #f43f5e; color: white; padding: 15px 40px; text-decoration: none; font-size: 18px; font-weight: bold; border-radius: 8px; transition: 0.3s; }\n" +
+            "        .btn:hover { background: #e11d48; }\n" +
+            "    </style>\n" +
+            "</head>\n" +
+            "<body>\n" +
+            "    <div class=\"container\">\n" +
+            "        <h1>NexusFlix VIP 🇮🇳</h1>\n" +
+            "        <p>Posters Fixed. Meta Fixed. 8-Second High-Speed Links Fixed.</p>\n" +
+            "        <a id=\"installBtn\" class=\"btn\" href=\"#\">Install Fresh Update</a>\n" +
+            "    </div>\n" +
+            "    <script>\n" +
+            "        const b64 = \"" + b64 + "\";\n" +
+            "        document.getElementById('installBtn').href = 'stremio://' + window.location.host + '/' + b64 + '/manifest.json';\n" +
+            "    </script>\n" +
+            "</body>\n" +
+            "</html>";
+            
             return new Response(html, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
         }
 
@@ -153,7 +151,6 @@ export default {
         // 3. CATALOG ROUTE
         const catalogMatch = path.match(/(?:\/([^\/]+))?\/catalog\/(movie|series|anime)\/([^\/]+)(?:\/([^\/]+))?\.json/);
         if (catalogMatch) {
-            // Check Cache
             let cachedRes = await cache.match(cacheKey);
             if (cachedRes) return cachedRes;
 
@@ -163,18 +160,18 @@ export default {
             
             if (extra) {
                 extra.split('&').forEach(p => {
-                    let [k, v] = p.split('=');
-                    if (k === 'skip') skip = parseInt(v) || 0;
-                    if (k === 'search') search = decodeURIComponent(v);
+                    let kv = p.split('=');
+                    if (kv[0] === 'skip') skip = parseInt(kv[1]) || 0;
+                    if (kv[0] === 'search') search = decodeURIComponent(kv[1]);
                 });
             }
 
             let metas = [];
             if (id.startsWith("anime")) {
-                let kUrl = `https://kitsu.io/api/edge/anime?page[limit]=20&page[offset]=${skip || 0}`;
-                if (search) kUrl += `&filter[text]=${encodeURIComponent(search)}`;
-                else if (id === "anime_trending") kUrl = `https://kitsu.io/api/edge/trending/anime?page[limit]=20`;
-                else if (id === "anime_airing") kUrl += `&filter[status]=current&sort=-userCount`;
+                let kUrl = "https://kitsu.io/api/edge/anime?page[limit]=20&page[offset]=" + (skip || 0);
+                if (search) kUrl += "&filter[text]=" + encodeURIComponent(search);
+                else if (id === "anime_trending") kUrl = "https://kitsu.io/api/edge/trending/anime?page[limit]=20";
+                else if (id === "anime_airing") kUrl += "&filter[status]=current&sort=-userCount";
                 
                 try {
                     let res = await fetch(kUrl);
@@ -182,7 +179,7 @@ export default {
                     metas = (data.data || []).map(anime => {
                         const attr = anime.attributes;
                         return {
-                            id: `kitsu:${anime.id}`, type: "anime",
+                            id: "kitsu:" + anime.id, type: "anime",
                             name: attr.canonicalTitle || attr.titles?.en || "Anime",
                             poster: attr.posterImage?.large || attr.posterImage?.original || "https://via.placeholder.com/500x750?text=No+Poster",
                             description: "⭐ Score: " + (attr.averageRating || "N/A") + "%\n" + (attr.synopsis || "")
@@ -195,27 +192,27 @@ export default {
                 let tUrl = "";
                 const today = new Date().toISOString().split('T')[0];
 
-                if (search) tUrl = `https://api.themoviedb.org/3/search/${isSeries ? 'tv' : 'movie'}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(search)}&page=${page}`;
-                else if (id === "indo_horror_trending") tUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_genres=27&with_origin_country=ID&sort_by=popularity.desc&page=${page}`;
-                else if (id === "indo_horror_latest") tUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_genres=27&with_origin_country=ID&sort_by=primary_release_date.desc&primary_release_date.lte=${today}&page=${page}`;
-                else if (id === "global_horror") tUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_genres=27&sort_by=vote_average.desc&vote_count.gte=500&page=${page}`;
-                else if (id === "bolly_trending") tUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=hi&sort_by=popularity.desc&page=${page}`;
-                else if (id === "bolly_latest") tUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=hi&sort_by=primary_release_date.desc&primary_release_date.lte=${today}&page=${page}`;
-                else if (id === "south_trending") tUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=te|ta|ml|kn&sort_by=popularity.desc&page=${page}`;
-                else if (id === "south_latest") tUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=te|ta|ml|kn&sort_by=primary_release_date.desc&primary_release_date.lte=${today}&page=${page}`;
-                else if (id === "netflix_trending") tUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&with_watch_providers=8&watch_region=IN&sort_by=popularity.desc&page=${page}`;
-                else if (id === "prime_trending") tUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&with_watch_providers=119&watch_region=IN&sort_by=popularity.desc&page=${page}`;
-                else if (id === "hotstar_trending") tUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&with_watch_providers=122&watch_region=IN&sort_by=popularity.desc&page=${page}`;
-                else if (id === "holly_trending") tUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_original_language=en&sort_by=popularity.desc&page=${page}`;
+                if (search) tUrl = "https://api.themoviedb.org/3/search/" + (isSeries ? 'tv' : 'movie') + "?api_key=" + TMDB_API_KEY + "&query=" + encodeURIComponent(search) + "&page=" + page;
+                else if (id === "indo_horror_trending") tUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + TMDB_API_KEY + "&with_genres=27&with_origin_country=ID&sort_by=popularity.desc&page=" + page;
+                else if (id === "indo_horror_latest") tUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + TMDB_API_KEY + "&with_genres=27&with_origin_country=ID&sort_by=primary_release_date.desc&primary_release_date.lte=" + today + "&page=" + page;
+                else if (id === "global_horror") tUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + TMDB_API_KEY + "&with_genres=27&sort_by=vote_average.desc&vote_count.gte=500&page=" + page;
+                else if (id === "bolly_trending") tUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + TMDB_API_KEY + "&with_original_language=hi&sort_by=popularity.desc&page=" + page;
+                else if (id === "bolly_latest") tUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + TMDB_API_KEY + "&with_original_language=hi&sort_by=primary_release_date.desc&primary_release_date.lte=" + today + "&page=" + page;
+                else if (id === "south_trending") tUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + TMDB_API_KEY + "&with_original_language=te|ta|ml|kn&sort_by=popularity.desc&page=" + page;
+                else if (id === "south_latest") tUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + TMDB_API_KEY + "&with_original_language=te|ta|ml|kn&sort_by=primary_release_date.desc&primary_release_date.lte=" + today + "&page=" + page;
+                else if (id === "netflix_trending") tUrl = "https://api.themoviedb.org/3/discover/tv?api_key=" + TMDB_API_KEY + "&with_watch_providers=8&watch_region=IN&sort_by=popularity.desc&page=" + page;
+                else if (id === "prime_trending") tUrl = "https://api.themoviedb.org/3/discover/tv?api_key=" + TMDB_API_KEY + "&with_watch_providers=119&watch_region=IN&sort_by=popularity.desc&page=" + page;
+                else if (id === "hotstar_trending") tUrl = "https://api.themoviedb.org/3/discover/tv?api_key=" + TMDB_API_KEY + "&with_watch_providers=122&watch_region=IN&sort_by=popularity.desc&page=" + page;
+                else if (id === "holly_trending") tUrl = "https://api.themoviedb.org/3/discover/movie?api_key=" + TMDB_API_KEY + "&with_original_language=en&sort_by=popularity.desc&page=" + page;
 
                 try {
                     if (tUrl) {
                         let res = await fetch(tUrl);
                         let data = await res.json();
                         metas = (data.results || []).map(m => ({
-                            id: `tmdb:${m.id}`, type: isSeries ? "series" : "movie",
+                            id: "tmdb:" + m.id, type: isSeries ? "series" : "movie",
                             name: m.title || m.name,
-                            poster: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : "https://via.placeholder.com/500x750?text=No+Poster",
+                            poster: m.poster_path ? "https://image.tmdb.org/t/p/w500" + m.poster_path : "https://via.placeholder.com/500x750?text=No+Poster",
                             description: "⭐ TMDB: " + (m.vote_average || "N/A") + "/10\n" + (m.overview || "")
                         }));
                     }
@@ -240,7 +237,7 @@ export default {
             if (id.startsWith("kitsu:")) {
                 try {
                     const cleanId = id.replace("kitsu:", "");
-                    let res = await fetch(`https://kitsu.io/api/edge/anime/${cleanId}`);
+                    let res = await fetch("https://kitsu.io/api/edge/anime/" + cleanId);
                     let data = await res.json();
                     const attr = data.data.attributes;
                     metaObj = { 
@@ -250,7 +247,7 @@ export default {
                     };
                     if (attr.subtype !== "movie") {
                         const videos = [];
-                        for (let i = 1; i <= (attr.episodeCount || 24); i++) videos.push({ id: `kitsu:${cleanId}:${i}`, title: `Episode ${i}`, season: 1, episode: i });
+                        for (let i = 1; i <= (attr.episodeCount || 24); i++) videos.push({ id: "kitsu:" + cleanId + ":" + i, title: "Episode " + i, season: 1, episode: i });
                         metaObj.videos = videos;
                     }
                 } catch (e) {}
@@ -258,12 +255,12 @@ export default {
                 try {
                     const cleanId = id.replace("tmdb:", "");
                     let realType = type === "series" ? "tv" : "movie";
-                    let res = await fetch(`https://api.themoviedb.org/3/${realType}/${cleanId}?api_key=${TMDB_API_KEY}&append_to_response=external_ids`);
+                    let res = await fetch("https://api.themoviedb.org/3/" + realType + "/" + cleanId + "?api_key=" + TMDB_API_KEY + "&append_to_response=external_ids");
                     let m = await res.json();
                     metaObj = {
                         id: id, type: type, name: m.title || m.name,
-                        poster: m.poster_path ? `https://image.tmdb.org/t/p/w500${m.poster_path}` : "https://via.placeholder.com/500x750?text=No+Poster",
-                        background: m.backdrop_path ? `https://image.tmdb.org/t/p/original${m.backdrop_path}` : undefined,
+                        poster: m.poster_path ? "https://image.tmdb.org/t/p/w500" + m.poster_path : "https://via.placeholder.com/500x750?text=No+Poster",
+                        background: m.backdrop_path ? "https://image.tmdb.org/t/p/original" + m.backdrop_path : undefined,
                         description: m.overview || "No Description.",
                         releaseInfo: m.release_date || m.first_air_date ? (m.release_date || m.first_air_date).substring(0, 4) : undefined,
                         imdbRating: m.vote_average ? m.vote_average.toFixed(1) : undefined
@@ -295,19 +292,19 @@ export default {
                 if (isAnime) {
                     const parts = targetId.split(":");
                     episodeNum = parts[2] || "";
-                    let kRes = await fetch(`https://kitsu.io/api/edge/anime/${parts[1]}`);
+                    let kRes = await fetch("https://kitsu.io/api/edge/anime/" + parts[1]);
                     let kData = await kRes.json();
                     mediaTitle = kData.data.attributes.canonicalTitle || kData.data.attributes.titles.en;
                 } else if (targetId.startsWith("tmdb:")) {
                     const parts = targetId.split(":");
                     seasonNum = parts[2]; episodeNum = parts[3];
-                    let tRes = await fetch(`https://api.themoviedb.org/3/${type === "series" ? 'tv' : 'movie'}/${parts[1]}?api_key=${TMDB_API_KEY}`);
+                    let tRes = await fetch("https://api.themoviedb.org/3/" + (type === "series" ? 'tv' : 'movie') + "/" + parts[1] + "?api_key=" + TMDB_API_KEY);
                     let tData = await tRes.json();
                     mediaTitle = tData.title || tData.name;
                 } else if (targetId.startsWith("tt")) {
                     const parts = targetId.split(":");
                     seasonNum = parts[1]; episodeNum = parts[2];
-                    let findRes = await fetch(`https://api.themoviedb.org/3/find/${parts[0]}?api_key=${TMDB_API_KEY}&external_source=imdb_id`);
+                    let findRes = await fetch("https://api.themoviedb.org/3/find/" + parts[0] + "?api_key=" + TMDB_API_KEY + "&external_source=imdb_id");
                     let findData = await findRes.json();
                     const item = findData.movie_results?.[0] || findData.tv_results?.[0];
                     if (item) mediaTitle = item.title || item.name;
@@ -319,17 +316,17 @@ export default {
 
             if (mediaTitle) {
                 let safeTitle = mediaTitle.replace(/[^a-zA-Z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
-                let query = isAnime ? `${safeTitle} ${episodeNum}` : (seasonNum ? `${safeTitle} S${seasonNum.padStart(2, '0')}E${episodeNum.padStart(2, '0')}` : safeTitle);
+                let query = isAnime ? safeTitle + " " + episodeNum : (seasonNum ? safeTitle + " S" + seasonNum.padStart(2, '0') + "E" + episodeNum.padStart(2, '0') : safeTitle);
 
                 scraperPromises.push((async () => {
-                    let resData = await fetchScraperBypass(`https://torrents-csv.com/service/search?q=${encodeURIComponent(query)}&size=30`);
+                    let resData = await fetchScraperBypass("https://torrents-csv.com/service/search?q=" + encodeURIComponent(query) + "&size=30");
                     if (resData && resData.torrents) {
                         resData.torrents.forEach(t => allStreams.push({ title: t.name, infoHash: t.infohash, seeders: t.seeders || 15, sizeFormatted: formatBytes(t.size_bytes), provider: "TorrentCSV" }));
                     }
                 })());
 
                 scraperPromises.push((async () => {
-                    let resData = await fetchScraperBypass(`https://bitsearch.info/api/v1/search?q=${encodeURIComponent(query)}&limit=15`);
+                    let resData = await fetchScraperBypass("https://bitsearch.info/api/v1/search?q=" + encodeURIComponent(query) + "&limit=15");
                     if (resData && resData.data) {
                         resData.data.forEach(t => allStreams.push({ title: t.name, infoHash: t.infohash, seeders: parseInt(t.seeders) || 10, sizeFormatted: t.size, provider: "BitSearch" }));
                     }
@@ -337,7 +334,7 @@ export default {
             }
 
             scraperPromises.push((async () => {
-                let tUrl = `https://torrentio.strem.fun/stream/${isAnime ? "anime" : type}/${targetId}.json`;
+                let tUrl = "https://torrentio.strem.fun/stream/" + (isAnime ? "anime" : type) + "/" + targetId + ".json";
                 let resData = await fetchScraperBypass(tUrl);
                 if (resData && resData.streams) {
                     resData.streams.forEach(s => { s.provider = "Torrentio API"; allStreams.push(s); });
@@ -370,11 +367,11 @@ export default {
                 else if (/\b(indonesian|indo)\b/i.test(fullText)) langBadge = "🇮🇩 INDONESIAN";
                 else if (/\b(japanese|jap)\b/i.test(fullText)) langBadge = "🇯🇵 JAPANESE";
 
-                let providerTag = `⚡ NexusFlix (${s.provider})`;
-                let cleanTitle = String(s.title).split(/\r?\n/)[0].replace(/\[.*?\]/g, "").trim();
+                let providerTag = "⚡ NexusFlix (" + s.provider + ")";
+                let cleanTitle = String(s.title).split(new RegExp('\\r?\\n'))[0].replace(new RegExp('\\[.*?\\]', 'g'), "").trim();
 
-                s.name = `🎬 NexusFlix VIP\n${langBadge}`;
-                s.title = `${quality} • ${providerTag}\n${cleanTitle}\n👤 ${seeders} Seeders`;
+                s.name = "🎬 NexusFlix VIP\n" + langBadge;
+                s.title = quality + " • " + providerTag + "\n" + cleanTitle + "\n👤 " + seeders + " Seeders";
 
                 processedStreams.push(s);
             });
@@ -382,4 +379,16 @@ export default {
             processedStreams.sort((a, b) => (b.seeders || 0) - (a.seeders || 0));
             let finalOutput = { streams: processedStreams.slice(0, 40) };
 
-            let response = new Response(JSON.stringify(finalOutput), { headers: { ...corsHeaders, 'Content-Type': 'application/json
+            let response = new Response(JSON.stringify(finalOutput), { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=21600' } });
+            
+            // Save to Cloudflare Cache if streams found
+            if (finalOutput.streams.length > 0) {
+                ctx.waitUntil(cache.put(cacheKey, response.clone()));
+            }
+
+            return response;
+        }
+
+        return new Response('Not Found', { status: 404, headers: corsHeaders });
+    }
+};
