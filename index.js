@@ -1,7 +1,7 @@
 /**
- * NexusFlix VIP 🇮🇳 - The Web Extractor Build (v15.0)
- * Includes Web Extractors UI + Master Embed APIs + Torrent Fallbacks
- * 100% Free & Cloudflare Worker Compatible
+ * NexusFlix VIP 🇮🇳 - The REAL Content Scraper (v18.0)
+ * NO FAKE DEMOS. Uses The Pirate Bay (TPB) + YTS + EZTV Direct APIs.
+ * 100% Unblockable on Cloudflare Workers.
  */
 
 const corsHeaders = {
@@ -20,7 +20,7 @@ export default {
     const path = url.pathname;
 
     // ==========================================
-    // 1. CONFIGURATION UI (Exact Match of your Screenshot)
+    // 1. CONFIGURATION UI
     // ==========================================
     if (path === '/' || path === '/configure') {
       const html = `<!DOCTYPE html>
@@ -30,25 +30,17 @@ export default {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>NexusFlix VIP Configuration</title>
           <style>
-              body { background-color: #2b2d3e; color: #a3a7b8; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; }
-              .container { max-width: 800px; margin: 0 auto; background: #1e1f2b; padding: 30px; border-radius: 12px; border: 1px solid #3a3d52; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+              body { background-color: #14151a; color: #a3a7b8; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; }
+              .container { max-width: 800px; margin: 0 auto; background: #1a1c23; padding: 30px; border-radius: 12px; border: 1px solid #2a2d3e; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
               .header { text-align: center; margin-bottom: 20px; }
-              .header img { width: 70px; border-radius: 50%; border: 2px solid #6131b4; margin-bottom: 10px; }
+              .header img { width: 70px; border-radius: 50%; border: 2px solid #eab308; margin-bottom: 10px; }
               h1 { color: #fff; font-size: 24px; margin: 0; }
               .desc { font-size: 13px; line-height: 1.6; text-align: center; margin-top: 10px; margin-bottom: 30px; color: #8b92a5; }
-              
-              .section-box { border: 2px solid #ff7b42; padding: 20px; border-radius: 10px; margin-bottom: 25px; background: #252736; }
-              h3 { font-size: 12px; color: #8b92a5; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; }
-              
-              .pill-container { display: flex; flex-wrap: wrap; gap: 10px; }
-              .pill { display: inline-block; cursor: pointer; position: relative; }
-              .pill input { position: absolute; opacity: 0; cursor: pointer; }
-              .pill span { display: inline-block; padding: 8px 16px; background: #3a2a54; border-radius: 8px; color: #d1d5e6; font-size: 14px; border: 1px solid #4c3870; transition: 0.2s; user-select: none; }
-              .pill input:checked + span { background: #6131b4; color: #fff; border-color: #7a42d6; }
-              
-              .install-btn { display: block; width: 100%; background: linear-gradient(135deg, #6131b4, #3b42ff); color: white; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 30px; text-align: center; text-decoration: none; transition: 0.3s; }
-              .install-btn:hover { opacity: 0.9; transform: translateY(-2px); }
-              .copy-btn { display: block; width: 100%; background: transparent; color: #6e84ff; padding: 10px; border: none; font-size: 14px; cursor: pointer; margin-top: 10px; text-align: center; font-weight: bold; }
+              .highlight { color: #eab308; font-weight: bold; }
+              .install-btn { display: block; width: 100%; background: linear-gradient(135deg, #eab308, #ca8a04); color: white; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 30px; text-align: center; text-decoration: none; transition: 0.3s; }
+              .copy-btn { display: block; width: 100%; background: transparent; color: #eab308; padding: 10px; border: none; font-size: 14px; cursor: pointer; margin-top: 10px; text-align: center; font-weight: bold; }
+              .input-group { display: flex; gap: 10px; margin-top: 20px; }
+              input[type="text"] { flex: 1; padding: 10px; background: #14151a; border: 1px solid #2a2d3e; color: #fff; border-radius: 5px; outline: none; }
           </style>
       </head>
       <body>
@@ -58,62 +50,23 @@ export default {
                   <h1>NexusFlix VIP 🇮🇳</h1>
               </div>
               <div class="desc">
-                  Ultimate Web Extractor & Torrent Aggregator. 100% Free & Cloudflare Optimized.
+                  <span class="highlight">NO FAKE DEMOS.</span> Fetches 100% Real Movies & Series directly from The Pirate Bay, YTS, and EZTV.
               </div>
-
-              <div class="section-box">
-                  <h3>Extractors — check to disable</h3>
-                  <div class="pill-container" id="ext-container">
-                      <label class="pill"><input type="checkbox" value="doodstream" checked><span>DoodStream</span></label>
-                      <label class="pill"><input type="checkbox" value="dropload" checked><span>Dropload</span></label>
-                      <label class="pill"><input type="checkbox" value="fastream" checked><span>Fastream</span></label>
-                      <label class="pill"><input type="checkbox" value="filelions" checked><span>FileLions</span></label>
-                      <label class="pill"><input type="checkbox" value="filemoon" checked><span>FileMoon</span></label>
-                      <label class="pill"><input type="checkbox" value="fsst" checked><span>Fsst</span></label>
-                      <label class="pill"><input type="checkbox" value="hublinks" checked><span>HUBLinks</span></label>
-                      <label class="pill"><input type="checkbox" value="hdstream4u" checked><span>HDStream4U</span></label>
-                      <label class="pill"><input type="checkbox" value="hubcloud" checked><span>HubCloud</span></label>
-                      <label class="pill"><input type="checkbox" value="kinoger" checked><span>KinoGer</span></label>
-                      <label class="pill"><input type="checkbox" value="lulustream" checked><span>LuluStream</span></label>
-                      <label class="pill"><input type="checkbox" value="mixdrop" checked><span>Mixdrop</span></label>
-                      <label class="pill"><input type="checkbox" value="moviebox" checked><span>MovieBox</span></label>
-                      <label class="pill"><input type="checkbox" value="savefiles" checked><span>SaveFiles</span></label>
-                      <label class="pill"><input type="checkbox" value="streamembed" checked><span>StreamEmbed</span></label>
-                      <label class="pill"><input type="checkbox" value="streamtape" checked><span>Streamtape</span></label>
-                      <label class="pill"><input type="checkbox" value="supervideo" checked><span>SuperVideo</span></label>
-                      <label class="pill"><input type="checkbox" value="uqload" checked><span>Uqload</span></label>
-                      <label class="pill"><input type="checkbox" value="vidara" checked><span>Vidara</span></label>
-                      <label class="pill"><input type="checkbox" value="vidsonic" checked><span>Vidsonic</span></label>
-                      <label class="pill"><input type="checkbox" value="vidzee" checked><span>VidZee</span></label>
-                      <label class="pill"><input type="checkbox" value="vidsrc" checked><span>VidSrc</span></label>
-                      <label class="pill"><input type="checkbox" value="vixsrc" checked><span>VixSrc</span></label>
-                      <label class="pill"><input type="checkbox" value="voe" checked><span>VOE</span></label>
-                      <label class="pill"><input type="checkbox" value="youtube" checked><span>YouTube</span></label>
-                  </div>
+              <a href="#" id="install-btn" class="install-btn">🚀 INSTALL ADD-ON</a>
+              <div class="input-group">
+                  <input type="text" id="manifest-url" readonly>
+                  <button class="copy-btn" onclick="copyLink()" style="width: auto; margin: 0;">COPY</button>
               </div>
-
-              <a href="#" id="install-btn" class="install-btn" onclick="generateInstall()">INSTALL ADD-ON</a>
-              <button class="copy-btn" onclick="copyLink()">📋 Copy Link</button>
           </div>
-
           <script>
-              function getConfigString() {
-                  let exts = Array.from(document.querySelectorAll('#ext-container input:not(:checked)')).map(cb => cb.value);
-                  return exts.length > 0 ? 'disabled=' + exts.join(',') : '';
-              }
-
-              function generateInstall() {
-                  const configStr = getConfigString();
-                  const baseUrl = window.location.origin;
-                  const finalUrl = configStr ? \`\${baseUrl}/\${configStr}/manifest.json\` : \`\${baseUrl}/manifest.json\`;
-                  window.location.href = finalUrl.replace(/^https?:\\/\\//, 'stremio://');
-              }
-
+              const baseUrl = window.location.origin;
+              const manifestUrl = baseUrl + '/manifest.json';
+              document.getElementById('install-btn').href = manifestUrl.replace(/^https?:\\/\\//, 'stremio://');
+              document.getElementById('manifest-url').value = manifestUrl;
               function copyLink() {
-                  const configStr = getConfigString();
-                  const baseUrl = window.location.origin;
-                  const finalUrl = configStr ? \`\${baseUrl}/\${configStr}/manifest.json\` : \`\${baseUrl}/manifest.json\`;
-                  navigator.clipboard.writeText(finalUrl).then(() => alert("✅ Link Copied! Paste in Stremio search bar."));
+                  const copyText = document.getElementById('manifest-url');
+                  copyText.select();
+                  navigator.clipboard.writeText(copyText.value).then(() => alert("✅ Link Copied! Paste in Stremio search bar."));
               }
           </script>
       </body>
@@ -124,25 +77,24 @@ export default {
     // ==========================================
     // 2. MANIFEST ROUTER
     // ==========================================
-    const manifestMatch = path.match(/(?:\/([^\/]+))?\/manifest\.json/);
-    if (manifestMatch) {
+    if (path.endsWith('/manifest.json')) {
       const manifest = {
-        id: 'org.stremio.nexusflixvip.v15',
-        version: '15.0.0',
+        id: 'org.stremio.nexusflixvip.v18',
+        version: '18.0.0',
         name: 'NexusFlix VIP 🇮🇳',
-        description: 'Web Extractors (Doodstream, Filemoon, etc) + Torrent Aggregator.',
+        description: 'Real Torrents Only (TPB + YTS + EZTV). No Fake Demos.',
         logo: 'https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png',
-        types: ['movie', 'series', 'anime'],
+        types: ['movie', 'series'],
         catalogs: [],
         resources: ['stream'],
-        idPrefixes: ['tt', 'kitsu'],
+        idPrefixes: ['tt'],
         behaviorHints: { configurable: true, configurationRequired: false }
       };
       return new Response(JSON.stringify(manifest), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     // ==========================================
-    // 3. STREAM SCRAPER (Web Extractors + Torrents)
+    // 3. STREAM SCRAPER (REAL TORRENTS ONLY)
     // ==========================================
     const streamMatch = path.match(/(?:\/([^\/]+))?\/stream\/(movie|series)\/([^\/]+)\.json/);
     
@@ -153,90 +105,132 @@ export default {
       const imdbId = idParts[0]; 
       
       let streams = [];
+      const fetchPromises = [];
+      const uniqueStreams = new Map();
+
+      const addStream = (streamData) => {
+        const key = streamData.infoHash;
+        if (key && !uniqueStreams.has(key)) {
+          uniqueStreams.set(key, streamData);
+        }
+      };
+
+      const formatBytes = (bytes) => {
+        if (!bytes || bytes === 0) return '0 B';
+        const k = 1024, sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      };
+
+      // STEP 1: Get Real Movie Name from Stremio's Cinemeta API
+      let title = '';
+      let year = '';
+      try {
+        const metaRes = await fetch(`https://v3-cinemeta.strem.io/meta/${type}/${imdbId}.json`);
+        if (metaRes.ok) {
+          const metaData = await metaRes.json();
+          title = metaData?.meta?.name || '';
+          year = metaData?.meta?.year || '';
+        }
+      } catch (e) {}
 
       // ---------------------------------------------------------
-      // PART A: WEB EXTRACTORS (VidSrc, SuperEmbed, AutoEmbed)
-      // Yeh APIs internally Doodstream, Filemoon, Mixdrop ko scrape karti hain
+      // PART A: THE PIRATE BAY (TPB) - Has CAMs and New Releases
       // ---------------------------------------------------------
-      
-      if (type === 'movie') {
-        // 1. VidSrc (Multi-Host Extractor)
-        streams.push({
-          name: 'Nexus Web 🌐',
-          title: '▶️ VidSrc Server (FileMoon/DoodStream)',
-          url: `https://vidsrc.me/embed/movie?imdb=${imdbId}`,
-          behaviorHints: { notWebReady: true }
-        });
+      if (title) {
+        let query = title;
+        if (type === 'series' && idParts.length === 3) {
+          const s = idParts[1].padStart(2, '0');
+          const e = idParts[2].padStart(2, '0');
+          query = `${title} s${s}e${e}`;
+        } else if (year) {
+          query = `${title} ${year}`;
+        }
         
-        // 2. SuperEmbed (Multi-Host Extractor)
-        streams.push({
-          name: 'Nexus Web 🌐',
-          title: '▶️ SuperEmbed Server (Mixdrop/Streamtape)',
-          url: `https://multiembed.mov/directstream.php?video_id=${imdbId}`,
-          behaviorHints: { notWebReady: true }
-        });
-
-        // 3. AutoEmbed (Multi-Host Extractor)
-        streams.push({
-          name: 'Nexus Web 🌐',
-          title: '▶️ AutoEmbed Server (VOE/Uqload)',
-          url: `https://autoembed.to/movie/imdb/${imdbId}`,
-          behaviorHints: { notWebReady: true }
-        });
-
-      } else if (type === 'series' && idParts.length === 3) {
-        const s = idParts[1];
-        const e = idParts[2];
-
-        streams.push({
-          name: 'Nexus Web 🌐',
-          title: `▶️ VidSrc Server (S${s} E${e})`,
-          url: `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${s}&episode=${e}`,
-          behaviorHints: { notWebReady: true }
-        });
-
-        streams.push({
-          name: 'Nexus Web 🌐',
-          title: `▶️ SuperEmbed Server (S${s} E${e})`,
-          url: `https://multiembed.mov/directstream.php?video_id=${imdbId}&s=${s}&e=${e}`,
-          behaviorHints: { notWebReady: true }
-        });
+        fetchPromises.push(
+          fetch(`https://apibay.org/q.php?q=${encodeURIComponent(query)}`, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+            .then(res => res.json())
+            .then(data => {
+              if (data && Array.isArray(data) && data[0].info_hash !== '0000000000000000000000000000000000000000') {
+                data.slice(0, 15).forEach(tor => { // Get top 15 results
+                  addStream({
+                    name: 'Nexus TPB 🏴‍☠️',
+                    title: `${tor.name}\n💾 ${formatBytes(tor.size)} | 👤 Seeds: ${tor.seeders}`,
+                    infoHash: tor.info_hash.toLowerCase()
+                  });
+                });
+              }
+            }).catch(e => console.error("TPB Error"))
+        );
       }
 
       // ---------------------------------------------------------
-      // PART B: TORRENT FALLBACK (For High Quality 4K/1080p)
-      // Web streams ki quality thodi kam hoti hai, isliye Torrents zaroori hain
+      // PART B: YTS API (For HD Movies)
       // ---------------------------------------------------------
-      try {
-        const clientIP = request.headers.get('CF-Connecting-IP') || '192.168.1.1';
-        const spoofHeaders = { 'User-Agent': 'Mozilla/5.0', 'X-Forwarded-For': clientIP };
+      if (type === 'movie' && imdbId.startsWith('tt')) {
+        fetchPromises.push(
+          fetch(`https://yts.mx/api/v2/movie_details.json?imdb_id=${imdbId}`, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+            .then(res => res.json())
+            .then(data => {
+              if (data?.data?.movie?.torrents) {
+                data.data.movie.torrents.forEach(tor => {
+                  addStream({
+                    name: 'Nexus YTS 🎥',
+                    title: `YTS | ${tor.quality} | ${tor.size}\n👤 Seeds: ${tor.seeds}`,
+                    infoHash: tor.hash.toLowerCase()
+                  });
+                });
+              }
+            }).catch(e => console.error("YTS Error"))
+        );
+      }
+
+      // ---------------------------------------------------------
+      // PART C: EZTV API (For HD Series)
+      // ---------------------------------------------------------
+      if (type === 'series' && idParts.length === 3 && imdbId.startsWith('tt')) {
+        const numericImdbId = imdbId.replace('tt', '');
+        const season = parseInt(idParts[1], 10);
+        const episode = parseInt(idParts[2], 10);
         
-        const torrentioUrl = `https://torrentio.strem.fun/stream/${type}/${fullId}.json`;
-        const res = await fetch(torrentioUrl, { headers: spoofHeaders });
-        
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.streams) {
-            data.streams.slice(0, 10).forEach(s => { // Top 10 best quality torrents
-              streams.push({
-                name: 'Nexus P2P ⚡',
-                title: s.title.replace(/Torrentio/gi, 'NexusFlix'),
-                infoHash: s.infoHash,
-                url: s.url,
-                behaviorHints: s.behaviorHints
-              });
-            });
-          }
-        }
-      } catch (e) {
-        console.error("Torrent Fetch Error");
+        fetchPromises.push(
+          fetch(`https://eztvx.to/api/get-torrents?imdb_id=${numericImdbId}&limit=100`, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+            .then(res => res.json())
+            .then(data => {
+              if (data?.torrents && data.torrents.length > 0) {
+                const matchingTorrents = data.torrents.filter(tor => 
+                  parseInt(tor.season, 10) === season && parseInt(tor.episode, 10) === episode
+                );
+                matchingTorrents.forEach(tor => {
+                  addStream({
+                    name: 'Nexus EZTV 📺',
+                    title: `EZTV | ${tor.title}\n💾 ${formatBytes(tor.size_bytes)} | 👤 Seeds: ${tor.seeds}`,
+                    infoHash: tor.hash.toLowerCase()
+                  });
+                });
+              }
+            }).catch(e => console.error("EZTV Error"))
+        );
+      }
+
+      // Wait for all APIs to finish
+      await Promise.allSettled(fetchPromises);
+      streams = Array.from(uniqueStreams.values());
+
+      // If no real torrents are found, tell the user the truth!
+      if (streams.length === 0) {
+        streams.push({
+          name: 'Nexus Info ⚠️',
+          title: `No Real Torrents Found!\nThis movie/episode is either too new or not available on the internet yet.`,
+          url: '#'
+        });
       }
 
       return new Response(JSON.stringify({ streams: streams }), {
           headers: { 
             ...corsHeaders, 
             'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
+            'Cache-Control': 'public, max-age=3600'
           }
       });
     }
