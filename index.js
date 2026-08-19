@@ -1,20 +1,31 @@
 /**
- * NexusFlix VIP - Ultimate Stable Build (v3.0.0)
- * 100% Working Proxy & Foolproof Installation
+ * NexusFlix VIP - Ultimate Dual Scraper Build (v4.0)
+ * Integrated YTS P2P + Torrentio Proxy + Web Extractors
  */
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
 
 export default {
   async fetch(request) {
+    // Handle CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders });
+    }
+
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // 1. MANIFEST (Add-on Details)
+    // 1. MANIFEST (Stremio format)
     if (path.endsWith('/manifest.json')) {
       const manifest = {
-        id: 'org.stremio.nexusflixvip.v3',
-        version: '3.0.0',
+        id: 'org.stremio.nexusflixvip.v4',
+        version: '4.0.0',
         name: 'NexusFlix VIP 🇮🇳',
-        description: 'High Speed Torrent Streams. 100% Free & Working Proxy.',
+        description: 'Advanced P2P Scraper & Web Extractor. 100% Working.',
         logo: 'https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png',
         types: ['movie', 'series', 'anime', 'other'],
         catalogs: [],
@@ -24,15 +35,12 @@ export default {
       };
 
       return new Response(JSON.stringify(manifest), {
-        headers: { 
-          'Content-Type': 'application/json', 
-          'Access-Control-Allow-Origin': '*' 
-        }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // 2. CONFIGURATION UI (Fixed Install Logic)
-    if (path === '/' || path === '/configure') {
+    // 2. CONFIGURATION UI (100% Install Fix with Copy Button)
+    if (path === '/' || path.endsWith('/configure')) {
       const html = `<!DOCTYPE html>
       <html lang="en">
       <head>
@@ -60,8 +68,8 @@ export default {
       <body>
           <div class="box">
               <img src="https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png" alt="Logo" onerror="this.style.display='none'">
-              <h1>NexusFlix VIP</h1>
-              <p>Your add-on is ready! Click the button below to install. If the button shows code instead of opening Stremio, use the Copy Link method.</p>
+              <h1>NexusFlix VIP V4</h1>
+              <p>Dual Scraper Active (P2P + Web). Click the button below to install, or use Copy Link.</p>
               
               <a href="#" id="install-btn" class="install-btn">🚀 INSTALL IN STREMIO</a>
               
@@ -71,90 +79,106 @@ export default {
                       <input type="text" id="manifest-url" readonly>
                       <button onclick="copyUrl()">COPY</button>
                   </div>
-                  <p style="font-size: 12px; margin-top: 10px; margin-bottom: 0;">Copy this link, open Stremio app, go to the search bar, paste the link, and hit enter to install.</p>
               </div>
           </div>
 
           <script>
-              // Generate URLs dynamically based on where the worker is hosted
               const baseUrl = window.location.origin;
               const manifestUrl = baseUrl + '/manifest.json';
-              const stremioUrl = manifestUrl.replace(/^https?:\\/\\//, 'stremio://');
-              
-              // Set the links
-              document.getElementById('install-btn').href = stremioUrl;
+              document.getElementById('install-btn').href = manifestUrl.replace(/^https?:\\/\\//, 'stremio://');
               document.getElementById('manifest-url').value = manifestUrl;
 
               function copyUrl() {
                   const copyText = document.getElementById('manifest-url');
                   copyText.select();
-                  copyText.setSelectionRange(0, 99999); // For mobile devices
+                  copyText.setSelectionRange(0, 99999);
                   navigator.clipboard.writeText(copyText.value).then(() => {
-                      alert("✅ Link Copied! Now open Stremio, paste it in the search bar and install.");
-                  }).catch(() => {
-                      alert("Failed to copy. Please select the text and copy manually.");
+                      alert("✅ Link Copied! Open Stremio, paste in search bar and hit enter.");
                   });
               }
           </script>
       </body>
       </html>`;
 
-      return new Response(html, {
-        headers: { 'Content-Type': 'text/html;charset=UTF-8' }
-      });
+      return new Response(html, { headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
     }
 
-    // 3. STREAM SCRAPER (Proxying Torrentio - The best free source)
+    // 3. STREMIO STREAM SCRAPER ROUTE
     const streamMatch = path.match(/(?:\/([^\/]+))?\/stream\/(movie|series|anime)\/([^\/]+)\.json/);
     
     if (streamMatch) {
-      const config = streamMatch[1] || ''; 
       const type = streamMatch[2]; 
-      const id = streamMatch[3]; 
-
+      const id = streamMatch[3]; // Example: tt1234567
+      const imdbId = id.split(':')[0]; // Handles series format tt1234567:1:2
+      
       let streams = [];
 
-      try {
-        // Build the Torrentio URL
-        const torrentioUrl = config 
-            ? `https://torrentio.strem.fun/${config}/stream/${type}/${id}.json`
-            : `https://torrentio.strem.fun/stream/${type}/${id}.json`;
-
-        // Fetch streams from Torrentio
-        const response = await fetch(torrentioUrl, {
-            headers: { 
-                'Accept': 'application/json',
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      // --- A: YTS P2P SCRAPER (From your new code) ---
+      if (type === 'movie' && imdbId.startsWith('tt')) {
+        try {
+          const ytsUrl = `https://yts.mx/api/v2/list_movies.json?query_term=${imdbId}`;
+          const ytsRes = await fetch(ytsUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+          if (ytsRes.ok) {
+            const data = await ytsRes.json();
+            if (data.data && data.data.movies) {
+              for (const movie of data.data.movies) {
+                if (movie.torrents) {
+                  for (const tor of movie.torrents) {
+                    streams.push({
+                      name: 'Nexus P2P (YTS)',
+                      title: `🎥 ${tor.quality} | ${tor.size}\n👤 S: ${tor.seeds} P: ${tor.peers}`,
+                      infoHash: tor.hash,
+                      behaviorHints: { bingeworthyGroup: "yts" }
+                    });
+                  }
+                }
+              }
             }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            if (data && data.streams && data.streams.length > 0) {
-                // Modify the streams to show your Add-on name
-                streams = data.streams.map(s => ({
-                    name: 'NexusFlix VIP',
-                    title: `⚡ ${s.title || "Stream"}`,
-                    infoHash: s.infoHash,
-                    url: s.url,
-                    behaviorHints: s.behaviorHints
-                }));
-            }
-        }
-      } catch (error) {
-        console.error("Scraper Error:", error);
+          }
+        } catch (err) { console.error("YTS Scrape Error", err); }
       }
 
-      // Return the streams to Stremio
+      // --- B: WEB SCRAPER EXTRACTOR (Direct links example using VidSrc) ---
+      if (type === 'movie') {
+        try {
+          const vidsrcUrl = `https://vidsrc.me/embed/movie?imdb=${imdbId}`;
+          streams.push({
+            name: 'Nexus Web',
+            title: `🌐 Web Stream (External Player)`,
+            url: vidsrcUrl, // We provide external URL. If user clicks, it opens web player
+            behaviorHints: { notWebReady: true }
+          });
+        } catch(e) {}
+      }
+
+      // --- C: TORRENTIO PROXY FALLBACK (For Series and extra Movie links) ---
+      try {
+        const torrentioUrl = `https://torrentio.strem.fun/stream/${type}/${id}.json`;
+        const res = await fetch(torrentioUrl, {
+            headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0' }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data && data.streams) {
+                data.streams.forEach(s => {
+                    streams.push({
+                        name: 'Nexus Pro',
+                        title: `⚡ ${s.title || "Stream"}`,
+                        infoHash: s.infoHash,
+                        url: s.url,
+                        behaviorHints: s.behaviorHints
+                    });
+                });
+            }
+        }
+      } catch (err) { console.error("Torrentio Error", err); }
+
+      // Return combined streams to Stremio
       return new Response(JSON.stringify({ streams: streams }), {
-          headers: { 
-              'Content-Type': 'application/json', 
-              'Access-Control-Allow-Origin': '*' 
-          }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // 4. 404 Not Found for anything else
     return new Response('Not Found', { status: 404 });
   }
 };
