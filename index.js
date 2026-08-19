@@ -1,7 +1,7 @@
 /**
- * NexusFlix VIP 🇮🇳 - The Ultimate Cache Engine (v14.0)
- * Exact UI Match, Advanced Caching, IP Spoofing, Custom Branding.
- * 100x Faster Response Times.
+ * NexusFlix VIP 🇮🇳 - The Web Extractor Build (v15.0)
+ * Includes Web Extractors UI + Master Embed APIs + Torrent Fallbacks
+ * 100% Free & Cloudflare Worker Compatible
  */
 
 const corsHeaders = {
@@ -20,7 +20,7 @@ export default {
     const path = url.pathname;
 
     // ==========================================
-    // 1. CONFIGURATION UI (Exact Match of Recording)
+    // 1. CONFIGURATION UI (Exact Match of your Screenshot)
     // ==========================================
     if (path === '/' || path === '/configure') {
       const html = `<!DOCTYPE html>
@@ -30,25 +30,21 @@ export default {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>NexusFlix VIP Configuration</title>
           <style>
-              body { background-color: #0f1015; color: #a3a7b8; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; }
-              .container { max-width: 800px; margin: 0 auto; background: #1a1c23; padding: 30px; border-radius: 12px; border: 1px solid #2a2d3e; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+              body { background-color: #2b2d3e; color: #a3a7b8; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 20px; }
+              .container { max-width: 800px; margin: 0 auto; background: #1e1f2b; padding: 30px; border-radius: 12px; border: 1px solid #3a3d52; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
               .header { text-align: center; margin-bottom: 20px; }
-              .header img { width: 70px; border-radius: 50%; border: 2px solid #3b42ff; margin-bottom: 10px; }
+              .header img { width: 70px; border-radius: 50%; border: 2px solid #6131b4; margin-bottom: 10px; }
               h1 { color: #fff; font-size: 24px; margin: 0; }
               .desc { font-size: 13px; line-height: 1.6; text-align: center; margin-top: 10px; margin-bottom: 30px; color: #8b92a5; }
               
-              h3 { font-size: 12px; color: #6b7280; text-transform: uppercase; border-bottom: 1px solid #2a2d3e; padding-bottom: 8px; margin-top: 30px; margin-bottom: 15px; }
-              .select-all { float: right; color: #3b42ff; cursor: pointer; text-transform: none; font-weight: bold; }
+              .section-box { border: 2px solid #ff7b42; padding: 20px; border-radius: 10px; margin-bottom: 25px; background: #252736; }
+              h3 { font-size: 12px; color: #8b92a5; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; }
               
-              .pill-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+              .pill-container { display: flex; flex-wrap: wrap; gap: 10px; }
               .pill { display: inline-block; cursor: pointer; position: relative; }
               .pill input { position: absolute; opacity: 0; cursor: pointer; }
-              .pill span { display: inline-block; padding: 8px 15px; background: #1d1e24; border-radius: 20px; color: #a3a7b8; font-size: 13px; border: 1px solid #2a2d3e; transition: 0.2s; user-select: none; }
-              .pill input:checked + span.blue { background: #3b42ff; color: #fff; border-color: #3b42ff; }
-              .pill input:checked + span.red { background: #e11d48; color: #fff; border-color: #e11d48; }
-              
-              .input-group { margin-bottom: 20px; }
-              select, input[type="text"] { width: 100%; padding: 12px; background: #14151a; border: 1px solid #2a2d3e; color: #fff; border-radius: 8px; outline: none; font-size: 14px; }
+              .pill span { display: inline-block; padding: 8px 16px; background: #3a2a54; border-radius: 8px; color: #d1d5e6; font-size: 14px; border: 1px solid #4c3870; transition: 0.2s; user-select: none; }
+              .pill input:checked + span { background: #6131b4; color: #fff; border-color: #7a42d6; }
               
               .install-btn { display: block; width: 100%; background: linear-gradient(135deg, #6131b4, #3b42ff); color: white; padding: 15px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 30px; text-align: center; text-decoration: none; transition: 0.3s; }
               .install-btn:hover { opacity: 0.9; transform: translateY(-2px); }
@@ -62,142 +58,48 @@ export default {
                   <h1>NexusFlix VIP 🇮🇳</h1>
               </div>
               <div class="desc">
-                  Provides ultra-fast torrent streams from scraped providers. Fully cached and optimized for Stremio.<br>
-                  Supports YTS, EZTV, RARBG, 1337x, ThePirateBay, TorrentGalaxy, and many more.
+                  Ultimate Web Extractor & Torrent Aggregator. 100% Free & Cloudflare Optimized.
               </div>
 
-              <h3>PROVIDERS <span class="select-all" onclick="toggleAll('prov')">Select All</span></h3>
-              <div class="pill-container" id="prov-container">
-                  <label class="pill"><input type="checkbox" value="yts" checked><span class="blue">YTS</span></label>
-                  <label class="pill"><input type="checkbox" value="eztv" checked><span class="blue">EZTV</span></label>
-                  <label class="pill"><input type="checkbox" value="rarbg" checked><span class="blue">RARBG</span></label>
-                  <label class="pill"><input type="checkbox" value="1337x" checked><span class="blue">1337x</span></label>
-                  <label class="pill"><input type="checkbox" value="thepiratebay" checked><span class="blue">ThePirateBay</span></label>
-                  <label class="pill"><input type="checkbox" value="kickasstorrents" checked><span class="blue">KickassTorrents</span></label>
-                  <label class="pill"><input type="checkbox" value="torrentgalaxy" checked><span class="blue">TorrentGalaxy</span></label>
-                  <label class="pill"><input type="checkbox" value="magnetdl" checked><span class="blue">MagnetDL</span></label>
-                  <label class="pill"><input type="checkbox" value="horriblesubs" checked><span class="blue">HorribleSubs</span></label>
-                  <label class="pill"><input type="checkbox" value="nyaasi" checked><span class="blue">NyaaSi</span></label>
-                  <label class="pill"><input type="checkbox" value="tokyotosho" checked><span class="blue">TokyoTosho</span></label>
-                  <label class="pill"><input type="checkbox" value="anidex" checked><span class="blue">AniDex</span></label>
-                  <label class="pill"><input type="checkbox" value="nekobt" checked><span class="blue">nekoBT</span></label>
-                  <label class="pill"><input type="checkbox" value="rutor" checked><span class="blue">Rutor</span></label>
-                  <label class="pill"><input type="checkbox" value="rutracker" checked><span class="blue">Rutracker</span></label>
-                  <label class="pill"><input type="checkbox" value="comando" checked><span class="blue">Comando</span></label>
-                  <label class="pill"><input type="checkbox" value="bludv" checked><span class="blue">BluDV</span></label>
-                  <label class="pill"><input type="checkbox" value="torrent9" checked><span class="blue">Torrent9</span></label>
-                  <label class="pill"><input type="checkbox" value="ilcorsaronero" checked><span class="blue">ilCorSaRoNeRo</span></label>
-                  <label class="pill"><input type="checkbox" value="mejortorrent" checked><span class="blue">MejorTorrent</span></label>
-                  <label class="pill"><input type="checkbox" value="wolfmax4k" checked><span class="blue">Wolfmax4k</span></label>
-                  <label class="pill"><input type="checkbox" value="cinecalidad" checked><span class="blue">Cinecalidad</span></label>
-                  <label class="pill"><input type="checkbox" value="besttorrents" checked><span class="blue">BestTorrents</span></label>
+              <div class="section-box">
+                  <h3>Extractors — check to disable</h3>
+                  <div class="pill-container" id="ext-container">
+                      <label class="pill"><input type="checkbox" value="doodstream" checked><span>DoodStream</span></label>
+                      <label class="pill"><input type="checkbox" value="dropload" checked><span>Dropload</span></label>
+                      <label class="pill"><input type="checkbox" value="fastream" checked><span>Fastream</span></label>
+                      <label class="pill"><input type="checkbox" value="filelions" checked><span>FileLions</span></label>
+                      <label class="pill"><input type="checkbox" value="filemoon" checked><span>FileMoon</span></label>
+                      <label class="pill"><input type="checkbox" value="fsst" checked><span>Fsst</span></label>
+                      <label class="pill"><input type="checkbox" value="hublinks" checked><span>HUBLinks</span></label>
+                      <label class="pill"><input type="checkbox" value="hdstream4u" checked><span>HDStream4U</span></label>
+                      <label class="pill"><input type="checkbox" value="hubcloud" checked><span>HubCloud</span></label>
+                      <label class="pill"><input type="checkbox" value="kinoger" checked><span>KinoGer</span></label>
+                      <label class="pill"><input type="checkbox" value="lulustream" checked><span>LuluStream</span></label>
+                      <label class="pill"><input type="checkbox" value="mixdrop" checked><span>Mixdrop</span></label>
+                      <label class="pill"><input type="checkbox" value="moviebox" checked><span>MovieBox</span></label>
+                      <label class="pill"><input type="checkbox" value="savefiles" checked><span>SaveFiles</span></label>
+                      <label class="pill"><input type="checkbox" value="streamembed" checked><span>StreamEmbed</span></label>
+                      <label class="pill"><input type="checkbox" value="streamtape" checked><span>Streamtape</span></label>
+                      <label class="pill"><input type="checkbox" value="supervideo" checked><span>SuperVideo</span></label>
+                      <label class="pill"><input type="checkbox" value="uqload" checked><span>Uqload</span></label>
+                      <label class="pill"><input type="checkbox" value="vidara" checked><span>Vidara</span></label>
+                      <label class="pill"><input type="checkbox" value="vidsonic" checked><span>Vidsonic</span></label>
+                      <label class="pill"><input type="checkbox" value="vidzee" checked><span>VidZee</span></label>
+                      <label class="pill"><input type="checkbox" value="vidsrc" checked><span>VidSrc</span></label>
+                      <label class="pill"><input type="checkbox" value="vixsrc" checked><span>VixSrc</span></label>
+                      <label class="pill"><input type="checkbox" value="voe" checked><span>VOE</span></label>
+                      <label class="pill"><input type="checkbox" value="youtube" checked><span>YouTube</span></label>
+                  </div>
               </div>
 
-              <div class="input-group">
-                  <h3>SORTING</h3>
-                  <select id="sort">
-                      <option value="qualityseeders">By quality then seeders</option>
-                      <option value="qualitysize">By quality then size</option>
-                      <option value="seeders">By seeders</option>
-                      <option value="size">By size</option>
-                  </select>
-              </div>
-
-              <div class="input-group">
-                  <h3>MAX RESULTS PER QUALITY</h3>
-                  <select id="limit">
-                      <option value="all">All results</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="5">5</option>
-                      <option value="10">10</option>
-                  </select>
-              </div>
-
-              <h3>PRIORITY LANGUAGE</h3>
-              <div class="pill-container" id="lang-container">
-                  <label class="pill"><input type="checkbox" value="hindi" checked><span class="blue">Hindi 🇮🇳</span></label>
-                  <label class="pill"><input type="checkbox" value="tamil"><span class="blue">Tamil 🇮🇳</span></label>
-                  <label class="pill"><input type="checkbox" value="telugu"><span class="blue">Telugu 🇮🇳</span></label>
-                  <label class="pill"><input type="checkbox" value="japanese"><span class="blue">Japanese 🇯🇵</span></label>
-                  <label class="pill"><input type="checkbox" value="russian"><span class="blue">Russian 🇷🇺</span></label>
-                  <label class="pill"><input type="checkbox" value="italian"><span class="blue">Italian 🇮🇹</span></label>
-                  <label class="pill"><input type="checkbox" value="spanish"><span class="blue">Spanish 🇪🇸</span></label>
-                  <label class="pill"><input type="checkbox" value="french"><span class="blue">French 🇫🇷</span></label>
-                  <label class="pill"><input type="checkbox" value="german"><span class="blue">German 🇩🇪</span></label>
-              </div>
-
-              <h3>EXCLUDE RESOLUTIONS</h3>
-              <div class="pill-container" id="res-container">
-                  <label class="pill"><input type="checkbox" value="blurayremux"><span class="red">BluRay REMUX</span></label>
-                  <label class="pill"><input type="checkbox" value="hdr"><span class="red">HDR/HDR10+/Dolby Vision</span></label>
-                  <label class="pill"><input type="checkbox" value="3d"><span class="red">3D</span></label>
-                  <label class="pill"><input type="checkbox" value="4k"><span class="red">4k</span></label>
-                  <label class="pill"><input type="checkbox" value="1080p"><span class="red">1080p</span></label>
-                  <label class="pill"><input type="checkbox" value="720p"><span class="red">720p</span></label>
-                  <label class="pill"><input type="checkbox" value="480p"><span class="red">480p</span></label>
-                  <label class="pill"><input type="checkbox" value="cam"><span class="red">Cam</span></label>
-                  <label class="pill"><input type="checkbox" value="screener"><span class="red">Screener</span></label>
-                  <label class="pill"><input type="checkbox" value="unknown"><span class="red">Unknown</span></label>
-              </div>
-
-              <div class="input-group">
-                  <h3>VIDEO SIZE LIMIT</h3>
-                  <input type="text" id="sizelimit" placeholder="e.g. 2GB, 500MB">
-              </div>
-
-              <div class="input-group">
-                  <h3>DEBRID PROVIDER</h3>
-                  <select id="debrid">
-                      <option value="none">None</option>
-                      <option value="realdebrid">RealDebrid</option>
-                      <option value="premiumize">Premiumize</option>
-                      <option value="alldebrid">AllDebrid</option>
-                      <option value="debridlink">DebridLink</option>
-                      <option value="easydebrid">EasyDebrid</option>
-                      <option value="offcloud">Offcloud</option>
-                      <option value="torbox">TorBox</option>
-                      <option value="putio">Put.io</option>
-                  </select>
-              </div>
-
-              <a href="#" id="install-btn" class="install-btn" onclick="generateInstall()">INSTALL</a>
+              <a href="#" id="install-btn" class="install-btn" onclick="generateInstall()">INSTALL ADD-ON</a>
               <button class="copy-btn" onclick="copyLink()">📋 Copy Link</button>
           </div>
 
           <script>
-              let states = { prov: true };
-              function toggleAll(type) {
-                  states[type] = !states[type];
-                  document.querySelectorAll('#' + type + '-container input').forEach(cb => cb.checked = states[type]);
-              }
-
               function getConfigString() {
-                  let config = [];
-                  
-                  let provs = Array.from(document.querySelectorAll('#prov-container input:checked')).map(cb => cb.value);
-                  if(provs.length > 0) config.push('providers=' + provs.join(','));
-
-                  let sort = document.getElementById('sort').value;
-                  if(sort !== 'qualityseeders') config.push('sort=' + sort);
-
-                  let limit = document.getElementById('limit').value;
-                  if(limit !== 'all') config.push('limit=' + limit);
-
-                  let langs = Array.from(document.querySelectorAll('#lang-container input:checked')).map(cb => cb.value);
-                  if(langs.length > 0) config.push('language=' + langs.join(','));
-
-                  let res = Array.from(document.querySelectorAll('#res-container input:checked')).map(cb => cb.value);
-                  if(res.length > 0) config.push('exclude=' + res.join(','));
-
-                  let size = document.getElementById('sizelimit').value;
-                  if(size) config.push('size=' + size);
-
-                  let debrid = document.getElementById('debrid').value;
-                  if(debrid !== 'none') config.push('debrid=' + debrid);
-
-                  return config.length > 0 ? config.join('|') : '';
+                  let exts = Array.from(document.querySelectorAll('#ext-container input:not(:checked)')).map(cb => cb.value);
+                  return exts.length > 0 ? 'disabled=' + exts.join(',') : '';
               }
 
               function generateInstall() {
@@ -220,17 +122,17 @@ export default {
     }
 
     // ==========================================
-    // 2. MANIFEST ROUTER (Handles config prefix)
+    // 2. MANIFEST ROUTER
     // ==========================================
     const manifestMatch = path.match(/(?:\/([^\/]+))?\/manifest\.json/);
     if (manifestMatch) {
       const manifest = {
-        id: 'org.stremio.nexusflixvip.v14',
-        version: '14.0.0',
+        id: 'org.stremio.nexusflixvip.v15',
+        version: '15.0.0',
         name: 'NexusFlix VIP 🇮🇳',
-        description: 'Ultra-Fast Cached Scraper. 100% Working & Anti-Block.',
+        description: 'Web Extractors (Doodstream, Filemoon, etc) + Torrent Aggregator.',
         logo: 'https://raw.githubusercontent.com/Jafirhossain/NexusFlix-VIP/main/logo.png',
-        types: ['movie', 'series', 'anime', 'other'],
+        types: ['movie', 'series', 'anime'],
         catalogs: [],
         resources: ['stream'],
         idPrefixes: ['tt', 'kitsu'],
@@ -240,87 +142,103 @@ export default {
     }
 
     // ==========================================
-    // 3. STREAM SCRAPER (The Cache Engine)
+    // 3. STREAM SCRAPER (Web Extractors + Torrents)
     // ==========================================
-    const streamMatch = path.match(/(?:\/([^\/]+))?\/stream\/(movie|series|anime)\/([^\/]+)\.json/);
+    const streamMatch = path.match(/(?:\/([^\/]+))?\/stream\/(movie|series)\/([^\/]+)\.json/);
     
     if (streamMatch) {
-      const configStr = streamMatch[1] || ''; 
       const type = streamMatch[2]; 
       const fullId = streamMatch[3]; 
+      const idParts = fullId.split(':');
+      const imdbId = idParts[0]; 
       
-      // --- CACHE SYSTEM (Makes it load in 0.1 seconds) ---
-      const cache = caches.default;
-      const cacheKey = new Request(url.toString(), request);
-      const cachedResponse = await cache.match(cacheKey);
-      
-      if (cachedResponse) {
-        console.log("Serving from Cache!");
-        return cachedResponse;
-      }
-
-      // --- IP SPOOFING HEADERS (To bypass blocks) ---
-      const clientIP = request.headers.get('CF-Connecting-IP') || '192.168.1.1';
-      const spoofHeaders = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'X-Forwarded-For': clientIP,
-        'CF-Connecting-IP': clientIP
-      };
-
       let streams = [];
 
-      try {
-        // Fetch from the massive database using the exact user configuration
-        const targetUrl = configStr 
-          ? `https://torrentio.strem.fun/${configStr}/stream/${type}/${fullId}.json`
-          : `https://torrentio.strem.fun/stream/${type}/${fullId}.json`;
+      // ---------------------------------------------------------
+      // PART A: WEB EXTRACTORS (VidSrc, SuperEmbed, AutoEmbed)
+      // Yeh APIs internally Doodstream, Filemoon, Mixdrop ko scrape karti hain
+      // ---------------------------------------------------------
+      
+      if (type === 'movie') {
+        // 1. VidSrc (Multi-Host Extractor)
+        streams.push({
+          name: 'Nexus Web 🌐',
+          title: '▶️ VidSrc Server (FileMoon/DoodStream)',
+          url: `https://vidsrc.me/embed/movie?imdb=${imdbId}`,
+          behaviorHints: { notWebReady: true }
+        });
+        
+        // 2. SuperEmbed (Multi-Host Extractor)
+        streams.push({
+          name: 'Nexus Web 🌐',
+          title: '▶️ SuperEmbed Server (Mixdrop/Streamtape)',
+          url: `https://multiembed.mov/directstream.php?video_id=${imdbId}`,
+          behaviorHints: { notWebReady: true }
+        });
 
-        const res = await fetch(targetUrl, { headers: spoofHeaders });
+        // 3. AutoEmbed (Multi-Host Extractor)
+        streams.push({
+          name: 'Nexus Web 🌐',
+          title: '▶️ AutoEmbed Server (VOE/Uqload)',
+          url: `https://autoembed.to/movie/imdb/${imdbId}`,
+          behaviorHints: { notWebReady: true }
+        });
+
+      } else if (type === 'series' && idParts.length === 3) {
+        const s = idParts[1];
+        const e = idParts[2];
+
+        streams.push({
+          name: 'Nexus Web 🌐',
+          title: `▶️ VidSrc Server (S${s} E${e})`,
+          url: `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${s}&episode=${e}`,
+          behaviorHints: { notWebReady: true }
+        });
+
+        streams.push({
+          name: 'Nexus Web 🌐',
+          title: `▶️ SuperEmbed Server (S${s} E${e})`,
+          url: `https://multiembed.mov/directstream.php?video_id=${imdbId}&s=${s}&e=${e}`,
+          behaviorHints: { notWebReady: true }
+        });
+      }
+
+      // ---------------------------------------------------------
+      // PART B: TORRENT FALLBACK (For High Quality 4K/1080p)
+      // Web streams ki quality thodi kam hoti hai, isliye Torrents zaroori hain
+      // ---------------------------------------------------------
+      try {
+        const clientIP = request.headers.get('CF-Connecting-IP') || '192.168.1.1';
+        const spoofHeaders = { 'User-Agent': 'Mozilla/5.0', 'X-Forwarded-For': clientIP };
+        
+        const torrentioUrl = `https://torrentio.strem.fun/stream/${type}/${fullId}.json`;
+        const res = await fetch(torrentioUrl, { headers: spoofHeaders });
         
         if (res.ok) {
           const data = await res.json();
           if (data && data.streams) {
-            // Re-brand the streams to NexusFlix VIP
-            streams = data.streams.map(s => {
-              // Replace any mention of Torrentio with NexusFlix
-              let newTitle = s.title ? s.title.replace(/Torrentio/gi, 'NexusFlix') : "Stream";
-              return {
-                name: 'NexusFlix VIP',
-                title: `⚡ ${newTitle}`,
+            data.streams.slice(0, 10).forEach(s => { // Top 10 best quality torrents
+              streams.push({
+                name: 'Nexus P2P ⚡',
+                title: s.title.replace(/Torrentio/gi, 'NexusFlix'),
                 infoHash: s.infoHash,
                 url: s.url,
                 behaviorHints: s.behaviorHints
-              };
+              });
             });
           }
         }
       } catch (e) {
-        console.error("Fetch Error:", e);
+        console.error("Torrent Fetch Error");
       }
 
-      // Fallback if nothing found
-      if (streams.length === 0) {
-        streams.push({
-          name: 'NexusFlix VIP',
-          title: '⚠️ No Streams Found or Movie is too new.',
-          url: '#'
-        });
-      }
-
-      // Create Response
-      const responseData = JSON.stringify({ streams: streams });
-      const finalResponse = new Response(responseData, {
+      return new Response(JSON.stringify({ streams: streams }), {
           headers: { 
             ...corsHeaders, 
             'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=14400' // Cache for 4 hours!
+            'Cache-Control': 'public, max-age=3600' // Cache for 1 hour
           }
       });
-
-      // Save to Cache for future requests (This is the speed secret)
-      ctx.waitUntil(cache.put(cacheKey, finalResponse.clone()));
-
-      return finalResponse;
     }
 
     return new Response('Not Found', { status: 404 });
