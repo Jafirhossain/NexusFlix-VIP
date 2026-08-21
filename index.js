@@ -41,9 +41,9 @@ export default {
         if (path === '/' || path === '/manifest.json' || path.endsWith('/manifest.json')) {
             const manifest = {
                 id: "org.nexusflix.hybridultimate",
-                version: "99.0.0",
+                version: "99.1.0",
                 name: "NexusFlix VIP 🇮🇳 (Hybrid Ultimate)",
-                description: "Direct Web Streams + All 20+ Trackers (Hindi & 4K Top)",
+                description: "Direct Web Streams (.m3u8) + All 20+ Trackers",
                 resources: ["catalog", "meta", "stream"],
                 types: ["movie", "series"],
                 idPrefixes: ["tmdb", "tt"],
@@ -102,7 +102,7 @@ export default {
             return new Response(JSON.stringify({ meta: metaObj }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
-        // 4. Stream Route (HYBRID: DIRECT WEB EXTRACTOR + ALL P2P TRACKERS)
+        // 4. Stream Route (HYBRID: JS SCRAPER + ALL P2P TRACKERS)
         const streamMatch = path.match(/\/stream\/(movie|series)\/([^\/]+)\.json/);
         if (streamMatch) {
             const type = streamMatch[1];
@@ -139,45 +139,38 @@ export default {
             const fetchTasks = [];
 
             // ----------------------------------------------------
-            // SECTION A: DIRECT FAST WEB STREAM EXTRACTORS (No P2P required)
+            // SECTION A: JAVASCRIPT SCRAPER FOR DIRECT STREAMS (.m3u8)
             // ----------------------------------------------------
-            if (imdbId || tmdbId) {
-                // 1. Direct Web Stream 1: VidSrc PRO (Fast Multi-Server)
-                const vidsrcUrl = type === 'series'
-                    ? `https://vidsrc.icu/embed/tv/${imdbId || tmdbId}/${season}/${episode}`
-                    : `https://vidsrc.icu/embed/movie/${imdbId || tmdbId}`;
-                directWebStreams.push({
-                    name: "🎬 NexusFlix VIP\n⚡ DIRECT STREAM",
-                    title: "✨ 1080p FULL HD (Fast Server 1)\n⚡ Instant Play • Zero Buffering",
-                    url: vidsrcUrl,
-                    score: 950
-                });
-
-                // 2. Direct Web Stream 2: SuperEmbed / MultiEmbed Direct Stream
-                const superUrl = type === 'series'
-                    ? `https://multiembed.mov/directstream.php?video_id=${imdbId || tmdbId}&s=${season}&e=${episode}`
-                    : `https://multiembed.mov/directstream.php?video_id=${imdbId || tmdbId}`;
-                directWebStreams.push({
-                    name: "🎬 NexusFlix VIP\n⚡ DIRECT STREAM",
-                    title: "📺 1080p HD (Fast Server 2 - MultiEmbed)\n⚡ Instant Play • Multi-Source",
-                    url: superUrl,
-                    score: 940
-                });
-
-                // 3. Direct Web Stream 3: AutoEmbed Direct Stream
-                const autoEmbedUrl = type === 'series'
-                    ? `https://player.autoembed.cc/embed/tv/${imdbId || tmdbId}/${season}/${episode}`
-                    : `https://player.autoembed.cc/embed/movie/${imdbId || tmdbId}`;
-                directWebStreams.push({
-                    name: "🎬 NexusFlix VIP\n⚡ DIRECT STREAM",
-                    title: "🌐 1080p HD (Server 3 - AutoEmbed)\n⚡ Instant Play • Mobile Friendly",
-                    url: autoEmbedUrl,
-                    score: 930
-                });
+            if (imdbId) {
+                fetchTasks.push((async () => {
+                    try {
+                        const scrapeUrl = type === 'series' 
+                            ? `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${season}&episode=${episode}`
+                            : `https://vidsrc.me/embed/movie?imdb=${imdbId}`;
+                        
+                        let pageRes = await fetch(scrapeUrl, {
+                            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+                        });
+                        
+                        let html = await pageRes.text();
+                        
+                        // JS Regex से छिपे हुए .m3u8 लिंक को खोजना
+                        let m3u8Match = html.match(/(https:\/\/[^\s"'<>]+\.m3u8[^\s"'<>]*)/i);
+                        
+                        if (m3u8Match && m3u8Match[1]) {
+                            directWebStreams.push({
+                                name: "🎬 NexusFlix VIP\n⚡ JS SCRAPER",
+                                title: "✨ 1080p RAW STREAM\n⚡ Instant Direct Play",
+                                url: m3u8Match[1],
+                                score: 950
+                            });
+                        }
+                    } catch (e) {}
+                })());
             }
 
             // ----------------------------------------------------
-            // SECTION B: ALL 20+ P2P TRACKERS (YTS, 1337x, RARBG, NyaaSi, Rutracker)
+            // SECTION B: ALL 20+ P2P TRACKERS (YTS, 1337x, RARBG, NyaaSi)
             // ----------------------------------------------------
             if (imdbId) {
                 const streamQuery = type === 'series' ? `${imdbId}:${season}:${episode}` : imdbId;
@@ -188,7 +181,6 @@ export default {
                             let titleLower = (s.title || "").toLowerCase();
                             let score = 100;
 
-                            // Hindi / Indian Language Priority
                             let langTag = "🌐 MULTI AUDIO";
                             if (/\b(hindi|hin|dubbed)\b/i.test(titleLower)) {
                                 langTag = "🇮🇳 HINDI DUB";
@@ -201,7 +193,6 @@ export default {
                                 score += 450;
                             }
 
-                            // Quality Ranking
                             let qualTag = "📺 1080p HD";
                             if (titleLower.includes("2160p") || titleLower.includes("4k")) {
                                 qualTag = "✨ 4K ULTRA HD";
@@ -214,7 +205,6 @@ export default {
                                 score += 50;
                             }
 
-                            // Trackers Matching
                             let provName = "P2P Network";
                             if (titleLower.includes("yts")) provName = "YTS";
                             else if (titleLower.includes("1337x")) provName = "1337x";
@@ -235,7 +225,6 @@ export default {
                 })());
             }
 
-            // Fallback P2P Scraper (Title + Year)
             if (mediaTitle) {
                 let cleanTitle = mediaTitle.replace(/[^a-zA-Z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
                 let query = `${cleanTitle} ${releaseYear}`.trim();
@@ -262,16 +251,10 @@ export default {
                 })());
             }
 
-            // Wait for P2P tasks with 3.8s strict timeout
             await Promise.allSettled(fetchTasks);
-
-            // Sort P2P streams: Highest Score (Hindi > 4K > 1080p > Seeders) at the top
             p2pTorrentStreams.sort((a, b) => b.score - a.score);
+            let combinedStreams = [...directWebStreams, ...p2pTorrentStreams];
 
-            // Combine Direct Web Streams + Sorted P2P Streams
-            let combinedStreams = [...p2pTorrentStreams, ...directWebStreams];
-
-            // Remove Duplicate Torrents
             let uniqueStreams = [];
             let seenHashes = new Set();
             combinedStreams.forEach(s => {
