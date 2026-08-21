@@ -1,11 +1,8 @@
 {
-  "name": "nexusflix-vip",
+  "name": "nexusflix-browser-agent",
   "version": "1.0.0",
-  "description": "Ultimate Combined Stremio Add-on",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "deploy": "wrangler deploy"
-  },
-  "dependencies": {}
+  "main": "src/index.js",
+  "dependencies": {
+    "@cloudflare/puppeteer": "^0.0.11"
+  }
 }
