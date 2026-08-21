@@ -10,7 +10,8 @@ async function fetchDirect(url) {
     try {
         let res = await fetch(url, {
             headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                'Accept': 'application/json, text/plain, */*'
             }
         });
         if (res.ok) return await res.json();
@@ -35,10 +36,10 @@ export default {
         // 1. Manifest
         if (path === '/' || path === '/manifest.json' || path.endsWith('/manifest.json')) {
             const manifest = {
-                id: "org.nexusflix.ultrastream",
-                version: "70.0.0",
-                name: "NexusFlix VIP 🇮🇳 (Working Engine)",
-                description: "Direct Torrent & Fast Media Streams",
+                id: "org.nexusflix.powerstream",
+                version: "80.0.0",
+                name: "NexusFlix VIP 🇮🇳 (Power Engine)",
+                description: "Multi-Source Scraping - All Providers Active",
                 resources: ["catalog", "meta", "stream"],
                 types: ["movie", "series"],
                 idPrefixes: ["tmdb", "tt"],
@@ -97,50 +98,82 @@ export default {
             return new Response(JSON.stringify({ meta: metaObj }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
-        // 4. Streams Route
+        // 4. Stream Route (MULTI-INDEXER POWER ENGINE)
         const streamMatch = path.match(/\/stream\/(movie|series)\/([^\/]+)\.json/);
         if (streamMatch) {
             const type = streamMatch[1];
             const targetId = streamMatch[2];
-            let mediaTitle = "";
-            let releaseYear = "";
+            let mediaTitle = "", releaseYear = "", imdbId = "";
 
             if (targetId.startsWith("tmdb:")) {
                 const cleanId = targetId.replace("tmdb:", "");
-                let tData = await fetchDirect(`https://api.themoviedb.org/3/${type === 'series' ? 'tv' : 'movie'}/${cleanId}?api_key=${TMDB_API_KEY}`);
+                let tData = await fetchDirect(`https://api.themoviedb.org/3/${type === 'series' ? 'tv' : 'movie'}/${cleanId}?api_key=${TMDB_API_KEY}&append_to_response=external_ids`);
                 mediaTitle = tData?.title || tData?.name || "";
                 releaseYear = (tData?.release_date || tData?.first_air_date || "").split('-')[0];
-            }
-
-            let streams = [];
-            if (mediaTitle) {
-                let cleanTitle = mediaTitle.replace(/[^a-zA-Z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
-                let searchQuery = `${cleanTitle} ${releaseYear}`.trim();
-
-                let resData = await fetchDirect(`https://torrents-csv.com/service/search?q=${encodeURIComponent(searchQuery)}&size=20`);
-                if (resData?.torrents && resData.torrents.length > 0) {
-                    resData.torrents.forEach(t => {
-                        let name = (t.name || "").toLowerCase();
-                        let quality = "📺 1080p FULL HD";
-                        if (name.includes("2160p") || name.includes("4k")) quality = "✨ 4K ULTRA HD";
-                        else if (name.includes("720p")) quality = "📱 720p HD";
-
-                        let lang = "🌐 MULTI AUDIO";
-                        if (/\b(hindi|hin)\b/i.test(name)) lang = "🇮🇳 HINDI DUB";
-                        else if (/\b(indonesian|indo)\b/i.test(name)) lang = "🇮🇩 INDONESIAN";
-
-                        streams.push({
-                            name: `🎬 NexusFlix VIP\n${lang}`,
-                            title: `${quality} • ⚡ Direct P2P\n${t.name}\n💾 ${formatBytes(t.size_bytes)} | 👤 ${t.seeders || 5} Seeders`,
-                            infoHash: t.infohash
-                        });
-                    });
+                imdbId = tData?.external_ids?.imdb_id || "";
+            } else if (targetId.startsWith("tt")) {
+                imdbId = targetId.split(":")[0];
+                let findData = await fetchDirect(`https://api.themoviedb.org/3/find/${imdbId}?api_key=${TMDB_API_KEY}&external_source=imdb_id`);
+                const item = findData?.movie_results?.[0] || findData?.tv_results?.[0];
+                if (item) {
+                    mediaTitle = item.title || item.name;
+                    releaseYear = (item.release_date || item.first_air_date || "").split('-')[0];
                 }
             }
 
-            streams.sort((a, b) => (b.seeders || 0) - (a.seeders || 0));
+            let allStreams = [];
+            const fetchTasks = [];
 
-            return new Response(JSON.stringify({ streams: streams }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+            // 1. Direct Torrentio Scraper (By IMDb ID)
+            if (imdbId) {
+                fetchTasks.push((async () => {
+                    let res = await fetchDirect(`https://torrentio.strem.fun/stream/${type}/${imdbId}.json`);
+                    if (res?.streams) {
+                        res.streams.forEach(s => {
+                            allStreams.push({
+                                name: "🎬 NexusFlix VIP\n⚡ Torrentio",
+                                title: s.title || "1080p Stream",
+                                infoHash: s.infoHash
+                            });
+                        });
+                    }
+                })());
+            }
+
+            // 2. Torrents-CSV + BitSearch (By Movie Title + Year)
+            if (mediaTitle) {
+                let cleanTitle = mediaTitle.replace(/[^a-zA-Z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+                let query = `${cleanTitle} ${releaseYear}`.trim();
+
+                fetchTasks.push((async () => {
+                    let resData = await fetchDirect(`https://torrents-csv.com/service/search?q=${encodeURIComponent(query)}&size=20`);
+                    if (resData?.torrents) {
+                        resData.torrents.forEach(t => {
+                            allStreams.push({
+                                name: "🎬 NexusFlix VIP\n🌐 P2P Direct",
+                                title: `📺 Direct Stream\n${t.name}\n💾 ${formatBytes(t.size_bytes)} | 👤 ${t.seeders || 5} Seeders`,
+                                infoHash: t.infohash
+                            });
+                        });
+                    }
+                })());
+            }
+
+            // 3.5 सेकंड का सुपरफास्ट रेस टाइमर
+            const waitTimer = new Promise(res => setTimeout(() => res("TIMEOUT"), 3500));
+            await Promise.race([Promise.allSettled(fetchTasks), waitTimer]);
+
+            // डुप्लीकेट हटाना
+            let uniqueStreams = [];
+            let seen = new Set();
+            allStreams.forEach(s => {
+                if (s.infoHash && !seen.has(s.infoHash)) {
+                    seen.add(s.infoHash);
+                    uniqueStreams.push(s);
+                }
+            });
+
+            return new Response(JSON.stringify({ streams: uniqueStreams }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
         return new Response('Not Found', { status: 404, headers: corsHeaders });
