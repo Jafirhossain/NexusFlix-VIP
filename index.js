@@ -1,5 +1,3 @@
-import puppeteer from '@cloudflare/puppeteer';
-
 const TMDB_API_KEY = "15d2ea6d0dc1d476efbca3eba2b9bbfb";
 
 const corsHeaders = {
@@ -10,10 +8,21 @@ const corsHeaders = {
 
 async function fetchDirect(url) {
     try {
-        let res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+        let res = await fetch(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+        });
         if (res.ok) return await res.json();
     } catch (e) {}
     return null;
+}
+
+function formatBytes(bytes) {
+    if (!bytes || bytes === 0) return '';
+    const k = 1024; const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 export default {
@@ -26,16 +35,16 @@ export default {
         // 1. Manifest
         if (path === '/' || path === '/manifest.json' || path.endsWith('/manifest.json')) {
             const manifest = {
-                id: "org.nexusflix.agentstreamer",
-                version: "52.0.0",
-                name: "NexusFlix VIP 🇮🇳 (Smart Agent)",
-                description: "Smart Multi-Provider Agent - All Asian & Global Horror",
+                id: "org.nexusflix.ultrastream",
+                version: "70.0.0",
+                name: "NexusFlix VIP 🇮🇳 (Working Engine)",
+                description: "Direct Torrent & Fast Media Streams",
                 resources: ["catalog", "meta", "stream"],
                 types: ["movie", "series"],
                 idPrefixes: ["tmdb", "tt"],
                 catalogs: [
                     { type: "movie", id: "indo_horror", name: "👻 Indonesian Horror" },
-                    { type: "movie", id: "world_horror", name: "💀 World Horror (Thai/Jap/Russian)" },
+                    { type: "movie", id: "world_horror", name: "💀 World Horror Masterpieces" },
                     { type: "movie", id: "bolly_trending", name: "🔥 Bollywood: Trending" },
                     { type: "movie", id: "south_trending", name: "🌟 South Indian: Trending" },
                     { type: "series", id: "netflix_trending", name: "👑 Netflix: Trending" }
@@ -48,12 +57,13 @@ export default {
         const catalogMatch = path.match(/\/catalog\/(movie|series)\/([^\/]+)\.json/);
         if (catalogMatch) {
             const catId = catalogMatch[2];
+            const today = new Date().toISOString().split('T')[0];
             let tUrl = `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&sort_by=popularity.desc&page=1`;
 
-            if (catId === "indo_horror") tUrl += "&with_genres=27&with_origin_country=ID";
-            else if (catId === "world_horror") tUrl += "&with_genres=27&sort_by=vote_average.desc&vote_count.gte=200";
-            else if (catId === "bolly_trending") tUrl += "&with_original_language=hi";
-            else if (catId === "south_trending") tUrl += "&with_original_language=te|ta|ml|kn";
+            if (catId === "indo_horror") tUrl += `&with_genres=27&with_origin_country=ID&primary_release_date.lte=${today}`;
+            else if (catId === "world_horror") tUrl += `&with_genres=27&sort_by=vote_average.desc&vote_count.gte=300&primary_release_date.lte=${today}`;
+            else if (catId === "bolly_trending") tUrl += `&with_original_language=hi&primary_release_date.lte=${today}`;
+            else if (catId === "south_trending") tUrl += `&with_original_language=te|ta|ml|kn&primary_release_date.lte=${today}`;
             else if (catId === "netflix_trending") tUrl = `https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&with_watch_providers=8&watch_region=IN&page=1`;
 
             let data = await fetchDirect(tUrl);
@@ -87,69 +97,50 @@ export default {
             return new Response(JSON.stringify({ meta: metaObj }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
-        // 4. Stream Route (SMART AGENT - MULTI SOURCE CRAWLER)
+        // 4. Streams Route
         const streamMatch = path.match(/\/stream\/(movie|series)\/([^\/]+)\.json/);
         if (streamMatch) {
             const type = streamMatch[1];
             const targetId = streamMatch[2];
-            let imdbId = targetId;
-            let movieTitle = "";
+            let mediaTitle = "";
+            let releaseYear = "";
 
             if (targetId.startsWith("tmdb:")) {
                 const cleanId = targetId.replace("tmdb:", "");
-                let tData = await fetchDirect(`https://api.themoviedb.org/3/${type === 'series' ? 'tv' : 'movie'}/${cleanId}?api_key=${TMDB_API_KEY}&append_to_response=external_ids`);
-                imdbId = tData?.external_ids?.imdb_id || targetId;
-                movieTitle = tData?.title || tData?.name || "";
+                let tData = await fetchDirect(`https://api.themoviedb.org/3/${type === 'series' ? 'tv' : 'movie'}/${cleanId}?api_key=${TMDB_API_KEY}`);
+                mediaTitle = tData?.title || tData?.name || "";
+                releaseYear = (tData?.release_date || tData?.first_air_date || "").split('-')[0];
             }
 
-            let foundStreams = [];
+            let streams = [];
+            if (mediaTitle) {
+                let cleanTitle = mediaTitle.replace(/[^a-zA-Z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+                let searchQuery = `${cleanTitle} ${releaseYear}`.trim();
 
-            try {
-                // Cloudflare का Puppeteer Browser Agent चालू
-                const browser = await puppeteer.launch(env.MYBROWSER);
-                const page = await browser.newPage();
+                let resData = await fetchDirect(`https://torrents-csv.com/service/search?q=${encodeURIComponent(searchQuery)}&size=20`);
+                if (resData?.torrents && resData.torrents.length > 0) {
+                    resData.torrents.forEach(t => {
+                        let name = (t.name || "").toLowerCase();
+                        let quality = "📺 1080p FULL HD";
+                        if (name.includes("2160p") || name.includes("4k")) quality = "✨ 4K ULTRA HD";
+                        else if (name.includes("720p")) quality = "📱 720p HD";
 
-                await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
+                        let lang = "🌐 MULTI AUDIO";
+                        if (/\b(hindi|hin)\b/i.test(name)) lang = "🇮🇳 HINDI DUB";
+                        else if (/\b(indonesian|indo)\b/i.test(name)) lang = "🇮🇩 INDONESIAN";
 
-                // नेटवर्क पर .m3u8 स्ट्रीम पकड़ना
-                page.on('response', async (res) => {
-                    const reqUrl = res.url();
-                    if (reqUrl.includes('.m3u8') && !reqUrl.includes('ads') && !reqUrl.includes('track')) {
-                        foundStreams.push(reqUrl);
-                    }
-                });
-
-                // 1. पहला सोर्स चेक (Vidplay / VidSrc)
-                await page.goto(`https://vidsrc.to/embed/${type === 'series' ? 'tv' : 'movie'}/${imdbId}`, { waitUntil: 'networkidle2', timeout: 8000 }).catch(() => {});
-
-                // 2. अगर लिंक नहीं मिला (No Title), तो दूसरा सोर्स चेक (SuperEmbed Fallback)
-                if (foundStreams.length === 0) {
-                    await page.goto(`https://multiembed.mov/directstream.php?video_id=${imdbId}&tmdb=1`, { waitUntil: 'networkidle2', timeout: 8000 }).catch(() => {});
-                }
-
-                await browser.close();
-            } catch (err) {}
-
-            let responseStreams = [];
-
-            if (foundStreams.length > 0) {
-                foundStreams.forEach((url, i) => {
-                    responseStreams.push({
-                        name: "🎬 NexusFlix VIP\n⚡ AGENT STREAM",
-                        title: `✨ Server ${i + 1} (Direct HD)\n100% Working • Multi-Audio`,
-                        url: url
+                        streams.push({
+                            name: `🎬 NexusFlix VIP\n${lang}`,
+                            title: `${quality} • ⚡ Direct P2P\n${t.name}\n💾 ${formatBytes(t.size_bytes)} | 👤 ${t.seeders || 5} Seeders`,
+                            infoHash: t.infohash
+                        });
                     });
-                });
-            } else {
-                // बैकअप डायरेक्ट प्लेयर (ताकि Stremio स्क्रीन कभी खाली न रहे)
-                responseStreams.push({
-                    name: "🎬 NexusFlix VIP\n🌐 BACKUP PLAYER",
-                    title: "📺 Instant Player (Multi-Source)",
-                    url: `https://vidsrc.me/embed/${type === 'series' ? 'tv' : 'movie'}?imdb=${imdbId}`
-                });
+                }
             }
 
-            return new Response(JSON.stringify({ streams: responseStreams }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+            streams.sort((a, b) => (b.seeders || 0) - (a.seeders || 0));
+
+            return new Response(JSON.stringify({ streams: streams }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
         }
 
         return new Response('Not Found', { status: 404, headers: corsHeaders });
