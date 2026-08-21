@@ -1,5 +1,5 @@
 name = "nexusflix-vip"
-main = "src/index.js"
+main = "index.js"
 compatibility_date = "2024-04-03"
 compatibility_flags = ["nodejs_compat"]
 
