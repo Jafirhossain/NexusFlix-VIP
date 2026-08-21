@@ -1,0 +1,8 @@
+{
+  "name": "nexusflix-browser-agent",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "dependencies": {
+    "@cloudflare/puppeteer": "^0.0.11"
+  }
+}
